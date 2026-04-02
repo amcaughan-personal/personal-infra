@@ -18,17 +18,23 @@ The current AWS control plane still lives under [`infra/terragrunt`](/home/aaron
 - Terraform state still uses the shared AWS S3 backend, so AWS credentials are required for backend access.
 - The GitHub provider itself expects runtime credentials from the environment, typically `GITHUB_TOKEN` or GitHub App credentials.
 
-## First Slice
+## Current Slices
 
-The initial slice standardizes a protected `main` ruleset across the managed repos:
+The first GitHub slices standardize two repository rulesets across the managed repos:
 
-- pull requests required
-- one approval required
-- review threads must be resolved
-- linear history required
-- force pushes blocked
-- branch deletion blocked
-- repository admins can bypass through pull requests so the setup still works for a solo org
+- `protected-main`
+  - pull requests required
+  - one approval required
+  - review threads must be resolved
+  - linear history required
+  - force pushes blocked
+  - branch deletion blocked
+  - repository admins can bypass through pull requests so the setup still works for a solo org
+- `release-tags`
+  - targets release tags matching `v*`
+  - allows creating new release tags
+  - blocks deleting or retargeting an existing release tag
+  - repository admins can bypass directly for break-glass cleanup or repair
 
 ## Next Slices
 
