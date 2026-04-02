@@ -1,0 +1,31 @@
+apps:
+  platform_sync:
+    registration:
+      owner: amcaughan-personal
+      name: Platform Sync
+      description: Opens standardized pull requests across managed repositories for shared workflow bumps and managed file rollouts.
+      url: https://github.com/amcaughan-personal/personal_infra
+      public: false
+      webhook_active: false
+      permissions:
+        administration: read
+        contents: write
+        metadata: read
+        pull_requests: write
+      events:
+        - pull_request
+        - push
+        - repository
+
+    installation:
+      # This is a one-time manual bootstrap step:
+      # 1. generate the registration URL with scripts/github/app-registration-url.py
+      # 2. create the app in GitHub
+      # 3. install it on the selected repositories
+      # 4. record the resulting installation ID here so Terraform can manage the repo access
+      id: null
+      selected_repositories:
+        - personal_infra
+        - data-simulator-api
+        - data-simulator-elt
+        - shared_workflows
