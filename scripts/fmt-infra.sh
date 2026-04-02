@@ -35,6 +35,10 @@ done
 
 terragrunt_dirs=()
 
+if [[ -d "${repo_root}/infra/terragrunt" ]]; then
+  terragrunt_dirs+=("${repo_root}/infra/terragrunt")
+fi
+
 for terragrunt_dir in "${repo_root}"/infra/*/terragrunt; do
   if [[ -d "${terragrunt_dir}" ]]; then
     terragrunt_dirs+=("${terragrunt_dir}")
