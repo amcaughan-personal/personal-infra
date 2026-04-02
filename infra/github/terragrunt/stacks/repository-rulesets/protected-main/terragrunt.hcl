@@ -3,12 +3,12 @@ include "root" {
 }
 
 locals {
-  repository_catalog = read_terragrunt_config(find_in_parent_folders("catalog/repositories.hcl"))
+  repository_data = yamldecode(file("${get_parent_terragrunt_dir("root")}/data/repositories.yaml"))
 
   protected_main_repositories = {
-    for repository_name, repository in local.repository_catalog.locals.repositories :
-    repository_name => try(repository.protected_main, {})
-    if try(repository.protected_main, null) != null
+    for repository_name, repository in local.repository_data.repositories :
+    repository_name => {}
+    if contains(try(repository.rulesets, []), "protected_main")
   }
 }
 

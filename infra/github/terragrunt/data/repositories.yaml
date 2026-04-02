@@ -1,0 +1,12 @@
+repositories:
+  data-simulator-api: {}
+
+  data-simulator-elt: {}
+
+  personal_infra:
+    # Roll out the protected-main ruleset here first, then fan out to the
+    # rest of the managed repos once the behavior feels right.
+    rulesets:
+      - protected_main
+
+  shared_workflows: {}
