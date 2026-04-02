@@ -13,9 +13,6 @@ EOF
 }
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-terragrunt_dir="${repo_root}/infra/terragrunt"
-terraform_modules_dir="${terragrunt_dir}/modules"
-
 check_mode=false
 
 while (($# > 0)); do
@@ -36,26 +33,42 @@ while (($# > 0)); do
   esac
 done
 
-if [[ ! -d "${terraform_modules_dir}" ]]; then
-  echo "Terraform modules directory not found: ${terraform_modules_dir}" >&2
+terragrunt_dirs=()
+
+if [[ -d "${repo_root}/infra/terragrunt" ]]; then
+  terragrunt_dirs+=("${repo_root}/infra/terragrunt")
+fi
+
+for terragrunt_dir in "${repo_root}"/infra/*/terragrunt; do
+  if [[ -d "${terragrunt_dir}" ]]; then
+    terragrunt_dirs+=("${terragrunt_dir}")
+  fi
+done
+
+if [[ ${#terragrunt_dirs[@]} -eq 0 ]]; then
+  echo "No Terragrunt roots found under ${repo_root}/infra" >&2
   exit 1
 fi
 
-if [[ ! -d "${terragrunt_dir}" ]]; then
-  echo "Terragrunt directory not found: ${terragrunt_dir}" >&2
-  exit 1
-fi
+for terragrunt_dir in "${terragrunt_dirs[@]}"; do
+  terraform_modules_dir="${terragrunt_dir}/modules"
 
-if [[ "${check_mode}" == true ]]; then
-  terraform fmt -check -recursive "${terraform_modules_dir}"
-  (
-    cd "${terragrunt_dir}"
-    terragrunt hcl format --check
-  )
-else
-  terraform fmt -recursive "${terraform_modules_dir}"
-  (
-    cd "${terragrunt_dir}"
-    terragrunt hcl format
-  )
-fi
+  if [[ ! -d "${terraform_modules_dir}" ]]; then
+    echo "Terraform modules directory not found: ${terraform_modules_dir}" >&2
+    exit 1
+  fi
+
+  if [[ "${check_mode}" == true ]]; then
+    terraform fmt -check -recursive "${terraform_modules_dir}"
+    (
+      cd "${terragrunt_dir}"
+      terragrunt hcl format --check
+    )
+  else
+    terraform fmt -recursive "${terraform_modules_dir}"
+    (
+      cd "${terragrunt_dir}"
+      terragrunt hcl format
+    )
+  fi
+done
