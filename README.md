@@ -1,18 +1,20 @@
-# aws_infra
+# personal_infra
 
-Personal AWS account infrastructure managed with Terragrunt and Terraform.
+Personal AWS and GitHub infrastructure managed with Terragrunt and Terraform.
 
-This repository defines a small, opinionated baseline focused on:
+This repository defines a small, opinionated personal control plane focused on:
 - account-level security visibility
 - high-signal alerts
 - cost guardrails
 - low-friction automation for disposable resources
 - a shared low-cost dev network foundation for private service testing
+- standardized GitHub governance for managed repositories
 
-This is just for me personally to manage my AWS account.
+This is just for me personally to manage the infrastructure and repository standards I use for experiments and demos.
 
 What’s in here
 
+- GitHub repository standards managed as infrastructure
 - CloudTrail with targeted CloudWatch alarms (root login, IAM changes, trail tampering)
 - GuardDuty with optional automated response for EC2 cryptomining
 - Account-wide S3 public access block
@@ -20,7 +22,7 @@ What’s in here
 - Scheduled automation for cleaning up opted-in disposable resources
 - Secure S3 patterns for logs and state
 - Shared dev VPC and shared endpoint stacks for private API/service experiments
-- Terragrunt-based layout for clarity and dependency management
+- Terragrunt-based layout for clarity and dependency management across both AWS and GitHub control-plane code
 
 What’s intentionally not in here
 
@@ -32,9 +34,13 @@ Usage
 
 This repo is applied manually via Terragrunt. CI is limited to static analysis and security scanning.
 
-Local tooling lives under `local/`.
+Local tooling lives under `local-dev/`.
 
-Shared dev network stacks live under `infra/terragrunt/live/network/dev`:
+AWS control-plane stacks live under `infra/aws/terragrunt`.
+
+GitHub control-plane stacks live under `infra/github/terragrunt`.
+
+Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
 - `vpc`
   cheap shared foundation intended to stay up
 - `endpoints`
@@ -42,7 +48,7 @@ Shared dev network stacks live under `infra/terragrunt/live/network/dev`:
 
 That split is deliberate. The VPC itself is cheap; the interface endpoints are the part I may tear down when I'm not actively testing private connectivity.
 
-Scheduled automation stacks live under `infra/terragrunt/live/automation`:
+Scheduled automation stacks live under `infra/aws/terragrunt/live/automation`:
 - `cleanup-janitor`
   daily account janitor for explicitly tagged disposable resources
 

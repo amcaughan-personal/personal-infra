@@ -2,7 +2,7 @@
 
 This subtree manages GitHub as infrastructure for the `amcaughan-personal` org.
 
-The current AWS control plane still lives under [`infra/terragrunt`](/home/aaron/repos/personal_infra/infra/terragrunt). We are keeping that tree in place for now so we can bootstrap GitHub management without coupling it to a larger AWS-path refactor.
+The AWS control plane lives under [`infra/aws/terragrunt`](/home/aaron/repos/personal_infra/infra/aws/terragrunt), and the GitHub control plane lives here under `infra/github/terragrunt`.
 
 ## Structure
 
