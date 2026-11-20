@@ -20,6 +20,13 @@ The current AWS control plane still lives under [`infra/terragrunt`](../../terra
 
 Per repository, as listed in `config/repositories.yaml`:
 
+- the repository itself (imported; Terraform never deletes one: destroy is blocked, and
+  removing it from the config would archive it). Org standard, set as module defaults:
+  - squash or rebase merges only; branches deleted after merging
+  - issues on; wiki and projects off (docs live in each repo)
+  - vulnerability alerts, secret scanning and push protection on (free for public repos)
+  - description, homepage and topics per repo; GitHub Pages left to each repo's workflow
+
 - `protected-main`
   - pull requests required
   - each repo's `required_checks` (in `config/repositories.yaml`) must pass, reported by GitHub Actions
