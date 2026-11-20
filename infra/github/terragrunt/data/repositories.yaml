@@ -1,0 +1,20 @@
+repositories:
+  data-simulator-api:
+    rulesets:
+      - protected_main
+      - release_tags
+
+  data-simulator-elt:
+    rulesets:
+      - protected_main
+      - release_tags
+
+  personal_infra:
+    rulesets:
+      - protected_main
+      - release_tags
+
+  shared_workflows:
+    rulesets:
+      - protected_main
+      - release_tags

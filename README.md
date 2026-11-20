@@ -1,8 +1,12 @@
-# aws_infra
+# personal_infra
 
-Personal AWS account infrastructure managed with Terragrunt and Terraform.
+Personal infrastructure managed with Terragrunt and Terraform:
+- **AWS**: my personal AWS account, under `infra/terragrunt`
+- **GitHub**: repository rulesets for the `amcaughan-personal` org, under [`infra/github/terragrunt`](infra/github/terragrunt/README.md)
 
-This repository defines a small, opinionated baseline focused on:
+Both trees share the same S3 state backend, local Docker tooling, and manual apply process.
+
+The AWS side defines a small, opinionated baseline focused on:
 - account-level security visibility
 - high-signal alerts
 - cost guardrails
@@ -32,7 +36,7 @@ Usage
 
 This repo is applied manually via Terragrunt. CI is limited to static analysis and security scanning.
 
-Local tooling lives under `local/`.
+Local tooling lives under `local-dev/`.
 
 Shared dev network stacks live under `infra/terragrunt/live/network/dev`:
 - `vpc`

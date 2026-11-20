@@ -1,14 +1,24 @@
-data "aws_availability_zones" "available" {
+# Pin AZs by zone ID so the subnet layout never shifts when AWS adds,
+# removes, or reorders Availability Zones in the region.
+data "aws_availability_zones" "selected" {
   state = "available"
+
+  filter {
+    name   = "zone-id"
+    values = var.availability_zone_ids
+  }
 }
 
 locals {
-  selected_az_count = min(var.availability_zone_count, length(data.aws_availability_zones.available.names))
-  selected_azs      = slice(data.aws_availability_zones.available.names, 0, local.selected_az_count)
+  az_name_by_id = zipmap(
+    data.aws_availability_zones.selected.zone_ids,
+    data.aws_availability_zones.selected.names,
+  )
 
+  # Order follows var.availability_zone_ids, so CIDR indexes are stable.
   private_subnet_cidrs = {
-    for index, az in local.selected_azs :
-    az => cidrsubnet(var.vpc_cidr, 8, index)
+    for index, zone_id in var.availability_zone_ids :
+    local.az_name_by_id[zone_id] => cidrsubnet(var.vpc_cidr, 8, index)
   }
 }
 
