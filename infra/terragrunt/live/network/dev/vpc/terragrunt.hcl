@@ -10,6 +10,6 @@ inputs = {
   name_prefix = "dev-shared"
   vpc_cidr    = "10.42.0.0/16"
   # Single-AZ keeps the dev network cheap. Expand later if a project needs HA testing.
-  availability_zone_count = 1
+  availability_zone_ids   = ["use2-az1"]
   ssm_prefix              = "/network/dev/vpc"
 }
