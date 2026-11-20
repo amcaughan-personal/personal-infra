@@ -30,9 +30,14 @@ locals {
     "Review or archive it: https://<region>.console.aws.amazon.com/guardduty/home?region=<region>#/findings?fId=<id>",
   ]
 
-  # A quoted JSON string tells EventBridge to deliver plain text. jsonencode escapes < and >,
-  # which EventBridge needs literally to recognise <placeholders>, so put them back.
-  message_template = replace(replace(jsonencode(join("\n", local.message_lines)), "\\u003c", "<"), "\\u003e", ">")
+  # EventBridge requires the template to be JSON or quoted strings. One quoted string per line,
+  # separated by real line breaks, gives a multi-line message (each line keeps its quotes);
+  # "\n" inside a single string is not turned into a newline. jsonencode quotes each line but
+  # escapes < and >, which EventBridge needs literally for <placeholders>, so put them back.
+  message_template = join("\n", [
+    for line in local.message_lines :
+    replace(replace(jsonencode(line), "\\u003c", "<"), "\\u003e", ">")
+  ])
 }
 
 resource "aws_cloudwatch_event_target" "to_sns" {
