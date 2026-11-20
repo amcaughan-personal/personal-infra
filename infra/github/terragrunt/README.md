@@ -16,40 +16,42 @@ The current AWS control plane still lives under [`infra/aws/terragrunt`](../../a
 - Terraform state still uses the shared AWS S3 backend, so AWS credentials are required for backend access.
 - The GitHub provider itself expects runtime credentials from the environment, typically `GITHUB_TOKEN` or GitHub App credentials.
 
-## Current Slices
+## What each repository gets
 
-Per repository, as listed in `config/repositories.yaml`:
+Per entry in `config/repositories.yaml` (set only what differs from the defaults):
 
-- the repository itself (imported; Terraform never deletes one: destroy is blocked, and
-  removing it from the config would archive it). Org standard, set as module defaults:
+- **The repository itself.** Terraform never deletes one: destroy is blocked, and removing an
+  entry would archive the repo. Org standard, set as module defaults:
   - squash or rebase merges only; branches deleted after merging
   - issues on; wiki and projects off (docs live in each repo)
   - vulnerability alerts, secret scanning and push protection on (free for public repos)
   - description, homepage and topics per repo; GitHub Pages left to each repo's workflow
-
-- `protected-main`
-  - pull requests required
-  - each repo's `required_checks` (in `config/repositories.yaml`) must pass, reported by GitHub Actions
-  - no approvals required (solo org), but every change still goes through a PR
-  - review threads must be resolved
-  - linear history required
-  - force pushes blocked
-  - branch deletion blocked
-  - repository admins can bypass through pull requests so the setup still works for a solo org
-- `release-tags`
-  - targets release tags matching `v*`
-  - allows creating new release tags
-  - blocks deleting or retargeting an existing release tag
-  - repository admins can bypass directly for break-glass cleanup or repair
-- `production` environment (repos with `production_environment: true`)
+- **Protected Main** (on unless `protected_main: false`)
+  - every change goes through a PR (no approval needed in a solo org); threads resolved
+  - the repo's `required_checks` must pass, reported by GitHub Actions
+  - linear history; no force pushes or branch deletion
+  - admins can bypass, but only through a PR
+- **A `production` environment** (with `production_environment: true`)
   - deploys only from `main`
   - a reviewer from `production_reviewers` must approve each deploy; admins can't bypass
+    (remove every reviewer for pure CI/CD; main-only still applies)
   - a repo's AWS deploy role trusts only jobs in this environment (OIDC subject
     `repo:amcaughan-personal/<repo>:environment:production`), so the approval can't be skipped
     by editing a workflow
 
-## Next Slices
+## Creating a repository
 
-- repository baseline settings
-- shared labels / variables / repository defaults
-- managed cross-repo file updates via PR fan-out automation
+1. Add an entry, usually starting from the template:
+
+   ```yaml
+     my-project:
+       description: "What it is"
+       template: repo-template
+   ```
+
+2. Plan and apply `live/repositories`. The repo is created with the standard settings and
+   Protected Main, and its first commit has the shared security scan.
+3. Add `required_checks` once its workflows have run on a PR (the template's three scans:
+   `security / trivy / trivy`, `security / gitleaks / gitleaks`, `security / actionlint / actionlint`).
+
+Without `template`, the repo starts with an empty README so `main` exists.

@@ -1,18 +1,19 @@
-# Everything managed about each repository: its rulesets and production environment.
+# Everything managed about each repository: its settings, the Protected Main ruleset and
+# a production environment.
 # config/repositories.yaml lists the repositories and what each one gets.
 
 locals {
-  # Repository admins (role id 5) can bypass: through a PR on main, directly on tags for repairs.
+  # Repository admins (role id 5) can bypass main's protection, but only through a PR.
   admin_role_id = 5
 
-  protected_main = { for name, repo in var.repositories : name => repo if contains(repo.rulesets, "protected_main") }
-  release_tags   = { for name, repo in var.repositories : name => repo if contains(repo.rulesets, "release_tags") }
+  protected_main = { for name, repo in var.repositories : name => repo if repo.protected_main }
   production     = { for name, repo in var.repositories : name => repo if repo.production_environment }
 }
 
 # --------------------------------------------------------------------------------------
-# The repository itself. Repos were created by hand and imported. Terraform never deletes
-# one: destroy is blocked, and removing one from the config would archive it.
+# The repository itself. New entries are created here (from a template if given, else
+# with an initial commit so main exists); the first repos were made by hand and imported.
+# Terraform never deletes one: destroy is blocked, and removing one would archive it.
 # --------------------------------------------------------------------------------------
 
 resource "github_repository" "this" {
@@ -25,6 +26,17 @@ resource "github_repository" "this" {
   homepage_url = each.value.homepage_url
   topics       = each.value.topics
   visibility   = "public"
+  is_template  = each.value.is_template
+
+  auto_init = each.value.template == null
+
+  dynamic "template" {
+    for_each = each.value.template == null ? [] : [each.value.template]
+    content {
+      owner      = var.github_owner
+      repository = template.value
+    }
+  }
 
   has_issues      = each.value.has_issues
   has_projects    = each.value.has_projects
@@ -55,8 +67,9 @@ resource "github_repository" "this" {
 
   lifecycle {
     prevent_destroy = true
-    # GitHub Pages is configured by each repo's own workflow, not here.
-    ignore_changes = [pages]
+    # Pages is configured by each repo's own workflow. auto_init and template only
+    # matter when a repo is created.
+    ignore_changes = [pages, auto_init, template]
   }
 }
 
@@ -113,38 +126,6 @@ resource "github_repository_ruleset" "protected_main" {
     actor_id    = local.admin_role_id
     actor_type  = "RepositoryRole"
     bypass_mode = "pull_request"
-  }
-}
-
-# --------------------------------------------------------------------------------------
-# Release Tags: v* tags can be created but not moved or deleted
-# --------------------------------------------------------------------------------------
-
-resource "github_repository_ruleset" "release_tags" {
-  for_each = local.release_tags
-
-  name        = "Release Tags"
-  repository  = each.key
-  target      = "tag"
-  enforcement = "active"
-
-  conditions {
-    ref_name {
-      include = ["refs/tags/v*"]
-      exclude = []
-    }
-  }
-
-  rules {
-    deletion            = true
-    required_signatures = false
-    update              = true
-  }
-
-  bypass_actors {
-    actor_id    = local.admin_role_id
-    actor_type  = "RepositoryRole"
-    bypass_mode = "always"
   }
 }
 

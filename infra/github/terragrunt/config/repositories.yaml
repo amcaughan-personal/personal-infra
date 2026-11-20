@@ -2,12 +2,12 @@
 production_reviewers:
   - amcaughan
 
+# Each repo gets the org's standard settings and Protected Main (see modules/repositories);
+# set only what differs. A new entry creates the repo. To start from the template, add
+# `template: repo-template`; add required_checks once its workflows have run on a PR.
 repositories:
   data-simulator-api:
     description: "An API designed to be used to simulate generic sorts of data for testing"
-    rulesets:
-      - protected_main
-      - release_tags
     # Deploys from main only, after approval; its AWS deploy role trusts only this environment.
     production_environment: true
     # Must pass before merging. Only checks that run on every PR (no path filters).
@@ -21,9 +21,6 @@ repositories:
 
   data-simulator-elt:
     description: "Sample ELT job that reads from my data-simulator-API"
-    rulesets:
-      - protected_main
-      - release_tags
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
@@ -35,9 +32,6 @@ repositories:
 
   personal_infra:
     description: "AWS Infra stuff for my personal account"
-    rulesets:
-      - protected_main
-      - release_tags
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting (aws) / formatting"
@@ -50,14 +44,19 @@ repositories:
 
   shared_workflows:
     description: "Reusable GitHub Actions workflows: Python checks, security scans, PR reports"
-    rulesets:
-      - protected_main
-      - release_tags
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "actionlint / actionlint"
       - "tests"
       - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
+
+  repo-template:
+    description: "Starting point for new repos: security scans, secret-scanning hook, README skeleton"
+    is_template: true
+    required_checks:
       - "security / trivy / trivy"
       - "security / gitleaks / gitleaks"
       - "security / actionlint / actionlint"
