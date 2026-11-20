@@ -27,4 +27,4 @@ skip-check:
 
 skip-path:
   # skip just this one file, it kills hostile cryptominers so it's strange and triggers "warnings" I want to ignore
-  - "infra/terragrunt/modules/guardduty-crypto-autokill/main.tf"
+  - "infra/aws/terragrunt/modules/guardduty-crypto-autokill/main.tf"

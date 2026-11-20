@@ -8,7 +8,7 @@ from unittest import mock
 
 TEMPLATE_PATH = (
     pathlib.Path(__file__).resolve().parents[1]
-    / "infra/terragrunt/modules/cleanup-janitor/lambda.py.tftpl"
+    / "infra/aws/terragrunt/modules/cleanup-janitor/lambda.py.tftpl"
 )
 
 
