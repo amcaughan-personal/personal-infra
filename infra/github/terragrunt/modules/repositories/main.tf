@@ -11,6 +11,54 @@ locals {
 }
 
 # --------------------------------------------------------------------------------------
+# The repository itself. Repos were created by hand and imported. Terraform never deletes
+# one: destroy is blocked, and removing one from the config would archive it.
+# --------------------------------------------------------------------------------------
+
+resource "github_repository" "this" {
+  for_each = var.repositories
+
+  name         = each.key
+  description  = each.value.description
+  homepage_url = each.value.homepage_url
+  topics       = each.value.topics
+  visibility   = "public"
+
+  has_issues      = each.value.has_issues
+  has_projects    = each.value.has_projects
+  has_wiki        = each.value.has_wiki
+  has_discussions = false
+
+  allow_merge_commit          = each.value.allow_merge_commit
+  allow_squash_merge          = true
+  allow_rebase_merge          = true
+  allow_auto_merge            = false
+  allow_update_branch         = false
+  delete_branch_on_merge      = each.value.delete_branch_on_merge
+  squash_merge_commit_title   = "COMMIT_OR_PR_TITLE"
+  squash_merge_commit_message = "COMMIT_MESSAGES"
+
+  vulnerability_alerts = each.value.vulnerability_alerts
+
+  security_and_analysis {
+    secret_scanning {
+      status = each.value.secret_scanning ? "enabled" : "disabled"
+    }
+    secret_scanning_push_protection {
+      status = each.value.secret_scanning_push_protection ? "enabled" : "disabled"
+    }
+  }
+
+  archive_on_destroy = true
+
+  lifecycle {
+    prevent_destroy = true
+    # GitHub Pages is configured by each repo's own workflow, not here.
+    ignore_changes = [pages]
+  }
+}
+
+# --------------------------------------------------------------------------------------
 # Protected Main: every change goes through a PR, and the repo's required checks pass
 # --------------------------------------------------------------------------------------
 

@@ -4,6 +4,12 @@ production_reviewers:
 
 repositories:
   data-simulator-api:
+    # TEMP-IMPORT: today's settings, removed in the standardizing step
+    description: "An API designed to be used to simulate generic sorts of data for testing"
+    has_projects: true
+    has_wiki: true
+    secret_scanning: false
+    secret_scanning_push_protection: false
     rulesets:
       - protected_main
       - release_tags
@@ -19,6 +25,12 @@ repositories:
       - "security / actionlint / actionlint"
 
   data-simulator-elt:
+    # TEMP-IMPORT: today's settings, removed in the standardizing step
+    description: "Sample ELT job that reads from my data-simulator-API"
+    has_projects: true
+    has_wiki: true
+    secret_scanning: false
+    secret_scanning_push_protection: false
     rulesets:
       - protected_main
       - release_tags
@@ -32,6 +44,11 @@ repositories:
       - "security / actionlint / actionlint"
 
   personal_infra:
+    # TEMP-IMPORT: today's settings, removed in the standardizing step
+    description: "AWS Infra stuff for my personal account"
+    has_projects: true
+    secret_scanning: false
+    secret_scanning_push_protection: false
     rulesets:
       - protected_main
       - release_tags
@@ -46,6 +63,14 @@ repositories:
       - "security / actionlint / actionlint"
 
   shared_workflows:
+    # TEMP-IMPORT: today's settings, removed in the standardizing step
+    has_projects: true
+    has_wiki: true
+    allow_merge_commit: true
+    delete_branch_on_merge: false
+    vulnerability_alerts: false
+    secret_scanning: false
+    secret_scanning_push_protection: false
     rulesets:
       - protected_main
       - release_tags
