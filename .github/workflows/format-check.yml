@@ -17,13 +17,17 @@ jobs:
           - root: aws
             terraform_modules_dir: infra/terragrunt/modules
             terragrunt_working_dir: infra/terragrunt
+            # Bash check scans every tracked .sh in the repo, so run it once
+            run_bash_syntax_check: true
           - root: github
             terraform_modules_dir: infra/github/terragrunt/modules
             terragrunt_working_dir: infra/github/terragrunt
-    uses: amcaughan-personal/shared_workflows/.github/workflows/format-check.yml@5a0752ab72d0b38f4256d2640b7b34221f5fa91b
+            run_bash_syntax_check: false
+    uses: amcaughan-personal/shared_workflows/.github/workflows/format-check.yml@0e1461414671b23dec4b80aedc0c2d29e60d3bca
     with:
       terraform_modules_dir: ${{ matrix.terraform_modules_dir }}
       terragrunt_working_dir: ${{ matrix.terragrunt_working_dir }}
+      run_bash_syntax_check: ${{ matrix.run_bash_syntax_check }}
       # Keep in sync with TERRAFORM_VERSION / TERRAGRUNT_VERSION in local-dev/docker/Dockerfile
       terraform_version: "1.14.2"
       terragrunt_version: "v0.94.0"
