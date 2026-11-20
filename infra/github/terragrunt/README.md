@@ -20,10 +20,11 @@ The current AWS control plane still lives under [`infra/terragrunt`](../../terra
 
 ## Current Slices
 
-The first GitHub slices standardize two repository rulesets across the managed repos:
+Two repository rulesets across the managed repos, and a production environment where a repo deploys:
 
 - `protected-main`
   - pull requests required
+  - each repo's `required_checks` (in `data/repositories.yaml`) must pass, reported by GitHub Actions
   - no approvals required (solo org), but every change still goes through a PR
   - review threads must be resolved
   - linear history required
@@ -35,6 +36,12 @@ The first GitHub slices standardize two repository rulesets across the managed r
   - allows creating new release tags
   - blocks deleting or retargeting an existing release tag
   - repository admins can bypass directly for break-glass cleanup or repair
+- `production` environment (repos with `production_environment: true`)
+  - deploys only from `main`
+  - a reviewer from `production_reviewers` must approve each deploy; admins can't bypass
+  - a repo's AWS deploy role trusts only jobs in this environment (OIDC subject
+    `repo:amcaughan-personal/<repo>:environment:production`), so the approval can't be skipped
+    by editing a workflow
 
 ## Next Slices
 
