@@ -16,9 +16,9 @@ locals {
 }
 
 # --------------------------------------------------------------------------------------
-# The repository itself. New entries are created here (from a template if given, else
-# with an initial commit so main exists); the first repos were made by hand and imported.
-# Terraform never deletes one: destroy is blocked, and removing one would archive it.
+# The repository itself. A new entry creates the repo: from a template if given, otherwise
+# with an initial commit so main exists. Terraform never deletes one: destroy is blocked,
+# and removing an entry would archive the repo.
 # --------------------------------------------------------------------------------------
 
 resource "github_repository" "this" {
@@ -174,15 +174,4 @@ resource "github_repository_environment_deployment_policy" "deploy_branch" {
   repository     = each.value.repository
   environment    = github_repository_environment.this[each.key].environment
   branch_pattern = "main"
-}
-
-# Renamed from the production-only version; same environment, same state.
-moved {
-  from = github_repository_environment.production["data-simulator-api"]
-  to   = github_repository_environment.this["data-simulator-api/production"]
-}
-
-moved {
-  from = github_repository_environment_deployment_policy.deploy_branch["data-simulator-api"]
-  to   = github_repository_environment_deployment_policy.deploy_branch["data-simulator-api/production"]
 }
