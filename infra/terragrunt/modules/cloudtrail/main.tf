@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 locals {
   computed_bucket_name = coalesce(
     var.bucket_name,
@@ -68,7 +70,7 @@ data "aws_iam_policy_document" "cloudtrail_bucket" {
       test     = "ArnLike"
       variable = "aws:SourceArn"
       values = [
-        "arn:aws:cloudtrail:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:trail/${var.trail_name}"
+        "arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:trail/${var.trail_name}"
       ]
     }
   }
@@ -149,7 +151,7 @@ data "aws_iam_policy_document" "cloudtrail_sns" {
       test     = "ArnLike"
       variable = "aws:SourceArn"
       values = [
-        "arn:aws:cloudtrail:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:trail/${var.trail_name}"
+        "arn:${data.aws_partition.current.partition}:cloudtrail:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:trail/${var.trail_name}"
       ]
     }
   }

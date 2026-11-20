@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 data "aws_caller_identity" "current" {}
 
 data "aws_ssm_parameter" "email" {
@@ -6,7 +8,7 @@ data "aws_ssm_parameter" "email" {
 
 locals {
   alert_email      = trimspace(data.aws_ssm_parameter.email.value)
-  billing_view_arn = "arn:aws:billing::${data.aws_caller_identity.current.account_id}:billingview/${var.billing_view_name}"
+  billing_view_arn = "arn:${data.aws_partition.current.partition}:billing::${data.aws_caller_identity.current.account_id}:billingview/${var.billing_view_name}"
 }
 
 resource "aws_budgets_budget" "this" {
