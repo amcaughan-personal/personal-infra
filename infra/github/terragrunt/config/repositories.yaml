@@ -13,7 +13,7 @@ repositories:
     environments:
       staging: {}
       production:
-        approval: true
+        approval: false # set to true to require a reviewer before production deploys
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
