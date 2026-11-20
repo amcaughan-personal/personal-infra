@@ -14,6 +14,7 @@ locals {
       required_signatures               = repository.required_signatures
       block_branch_deletion             = repository.block_branch_deletion
       block_force_pushes                = repository.block_force_pushes
+      required_checks                   = repository.required_checks
       bypass_actors                     = repository.bypass_actors
     }
   }
@@ -39,6 +40,20 @@ resource "github_repository_ruleset" "protected_main" {
     non_fast_forward        = each.value.block_force_pushes
     required_linear_history = each.value.required_linear_history
     required_signatures     = each.value.required_signatures
+
+    dynamic "required_status_checks" {
+      for_each = length(each.value.required_checks) > 0 ? [1] : []
+      content {
+        strict_required_status_checks_policy = false
+        dynamic "required_check" {
+          for_each = each.value.required_checks
+          content {
+            context        = required_check.value
+            integration_id = 15368 # GitHub Actions, so no other app can report these checks
+          }
+        }
+      }
+    }
 
     pull_request {
       allowed_merge_methods             = each.value.allowed_merge_methods

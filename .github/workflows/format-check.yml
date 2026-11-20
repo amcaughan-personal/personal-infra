@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   formatting:
+    name: formatting (${{ matrix.root }})
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +24,7 @@ jobs:
             terraform_modules_dir: infra/github/terragrunt/modules
             terragrunt_working_dir: infra/github/terragrunt
             run_bash_syntax_check: false
-    uses: amcaughan-personal/shared_workflows/.github/workflows/format-check.yml@4907c57b37ede01367c11025b6e875ce342db7a5
+    uses: amcaughan-personal/shared_workflows/.github/workflows/format-check.yml@2be502c42a88d95e2735d716d57e12374ab81245
     with:
       terraform_modules_dir: ${{ matrix.terraform_modules_dir }}
       terragrunt_working_dir: ${{ matrix.terragrunt_working_dir }}

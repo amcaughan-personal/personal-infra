@@ -3,18 +3,51 @@ repositories:
     rulesets:
       - protected_main
       - release_tags
+    # Must pass before merging. Only checks that run on every PR (no path filters).
+    required_checks:
+      - "formatting / formatting"
+      - "python / python"
+      - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
 
   data-simulator-elt:
     rulesets:
       - protected_main
       - release_tags
+    # Must pass before merging. Only checks that run on every PR (no path filters).
+    required_checks:
+      - "formatting / formatting"
+      - "unit-tests"
+      - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
 
   personal_infra:
     rulesets:
       - protected_main
       - release_tags
+    # Must pass before merging. Only checks that run on every PR (no path filters).
+    required_checks:
+      - "formatting (aws) / formatting"
+      - "formatting (github) / formatting"
+      - "unit-tests"
+      - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
 
   shared_workflows:
     rulesets:
       - protected_main
       - release_tags
+    # Must pass before merging. Only checks that run on every PR (no path filters).
+    required_checks:
+      - "actionlint / actionlint"
+      - "tests"
+      - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
