@@ -1,8 +1,14 @@
+# Who can approve deploys to any repo's production environment.
+production_reviewers:
+  - amcaughan
+
 repositories:
   data-simulator-api:
     rulesets:
       - protected_main
       - release_tags
+    # Deploys from main only, after approval; its AWS deploy role trusts only this environment.
+    production_environment: true
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
