@@ -18,7 +18,7 @@ variable "repositories" {
       actor_id    = number
       actor_type  = string
       bypass_mode = string
-    })), [{
+      })), [{
       actor_id    = 5
       actor_type  = "RepositoryRole"
       bypass_mode = "pull_request"
