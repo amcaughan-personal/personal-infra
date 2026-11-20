@@ -1,7 +1,7 @@
 # personal_infra
 
 Personal infrastructure managed with Terragrunt and Terraform:
-- **AWS**: my personal AWS account, under `infra/terragrunt`
+- **AWS**: my personal AWS account, under `infra/aws/terragrunt`
 - **GitHub**: repository rulesets for the `amcaughan-personal` org, under [`infra/github/terragrunt`](infra/github/terragrunt/README.md)
 
 Both trees share the same S3 state backend, local Docker tooling, and manual apply process.
@@ -39,7 +39,7 @@ This repo is applied manually via Terragrunt. CI is limited to static analysis a
 
 Local tooling lives under `local-dev/`.
 
-Shared dev network stacks live under `infra/terragrunt/live/network/dev`:
+Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
 - `vpc`
   cheap shared foundation intended to stay up
 - `endpoints`
@@ -47,7 +47,7 @@ Shared dev network stacks live under `infra/terragrunt/live/network/dev`:
 
 That split is deliberate. The VPC itself is cheap; the interface endpoints are the part I may tear down when I'm not actively testing private connectivity.
 
-Scheduled automation stacks live under `infra/terragrunt/live/automation`:
+Scheduled automation stacks live under `infra/aws/terragrunt/live/automation`:
 - `cleanup-janitor`
   daily account janitor for explicitly tagged disposable resources
 

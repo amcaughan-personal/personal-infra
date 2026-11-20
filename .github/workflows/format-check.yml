@@ -16,8 +16,8 @@ jobs:
       matrix:
         include:
           - root: aws
-            terraform_modules_dir: infra/terragrunt/modules
-            terragrunt_working_dir: infra/terragrunt
+            terraform_modules_dir: infra/aws/terragrunt/modules
+            terragrunt_working_dir: infra/aws/terragrunt
             # Bash check scans every tracked .sh in the repo, so run it once
             run_bash_syntax_check: true
           - root: github
