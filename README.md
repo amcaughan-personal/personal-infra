@@ -25,6 +25,7 @@ What’s in here
 - Secure S3 patterns for logs and state
 - Shared dev VPC and shared endpoint stacks for private API/service experiments
 - Terragrunt-based layout for clarity and dependency management
+- Every resource tagged with `Repo` and `Stack`, so anything in the console points back to the code that manages it
 
 What’s intentionally not in here
 

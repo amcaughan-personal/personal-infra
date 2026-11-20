@@ -181,8 +181,10 @@ EOF
     --bucket "$BUCKET_NAME" \
     --tagging '{
       "TagSet": [
-        {"Key":"Project","Value":"aws_infra_core"},
-        {"Key":"ManagedBy","Value":"bootstrap"}
+        {"Key":"Repo","Value":"amcaughan-personal/personal_infra"},
+        {"Key":"Stack","Value":"scripts/tf-backend-setup.sh"},
+        {"Key":"ManagedBy","Value":"bootstrap-script"},
+        {"Key":"Owner","Value":"amcaughan"}
       ]
     }'
 }

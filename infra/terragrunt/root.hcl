@@ -2,10 +2,13 @@ locals {
   aws_region  = "us-east-2"
   aws_profile = "default"
 
+  # On every taggable resource, so anything in the console points back to the code
+  # that manages it: the repo, and the Terragrunt stack within it.
   common_tags = {
-    Project   = "aws_infra"
-    Owner     = "amcaughan"
+    Repo      = "amcaughan-personal/personal_infra"
+    Stack     = path_relative_to_include() # e.g. live/security/cloudtrail
     ManagedBy = "terragrunt"
+    Owner     = "amcaughan"
   }
 }
 
