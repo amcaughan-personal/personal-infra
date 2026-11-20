@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     python3 \
-    python3-yaml \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 

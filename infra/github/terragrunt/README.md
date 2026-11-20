@@ -7,11 +7,11 @@ The current AWS control plane still lives under [`infra/terragrunt`](/home/aaron
 ## Structure
 
 - `data/`
-  - shared inventory data such as managed repositories and GitHub Apps
+  - shared inventory data for Terragrunt-managed GitHub state
 - `modules/`
   - reusable Terraform modules for GitHub standards
-- `stacks/`
-  - Terragrunt stacks that apply those standards to the org
+- `live/`
+  - Terragrunt deployment units that apply those standards to the org
 
 ## Authentication
 
@@ -39,24 +39,5 @@ The first GitHub slices standardize two repository rulesets across the managed r
 ## Next Slices
 
 - repository baseline settings
-- GitHub App installation access
 - shared labels / variables / repository defaults
 - managed cross-repo file updates via PR fan-out automation
-
-## First App
-
-The first app definition is `platform_sync`, a GitHub App intended to open standardized pull requests across the managed repositories for things like:
-
-- shared workflow SHA bumps
-- managed config updates
-- repo-wide file rollouts
-
-The app definition lives in `data/apps.yaml`. The installation-management stack lives under `stacks/app-installations/platform-sync`.
-
-Important: the GitHub provider here manages installation repository access, not app registration itself. The app still needs to be created once in GitHub and then wired in with an installation ID under `apps.<name>.installation.id`.
-
-Bootstrap the app registration with:
-
-```bash
-scripts/github/app-registration-url.py platform_sync
-```
