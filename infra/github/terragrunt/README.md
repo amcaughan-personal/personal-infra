@@ -2,7 +2,7 @@
 
 This subtree manages GitHub as infrastructure for the `amcaughan-personal` org.
 
-The current AWS control plane still lives under [`infra/terragrunt`](/home/aaron/repos/personal_infra/infra/terragrunt). We are keeping that tree in place for now so we can bootstrap GitHub management without coupling it to a larger AWS-path refactor.
+The current AWS control plane still lives under [`infra/terragrunt`](../../terragrunt). We are keeping that tree in place for now so we can bootstrap GitHub management without coupling it to a larger AWS-path refactor.
 
 ## Structure
 
@@ -24,7 +24,7 @@ The first GitHub slices standardize two repository rulesets across the managed r
 
 - `protected-main`
   - pull requests required
-  - one approval required
+  - no approvals required (solo org), but every change still goes through a PR
   - review threads must be resolved
   - linear history required
   - force pushes blocked

@@ -5,7 +5,7 @@ variable "repositories" {
     ruleset_name                      = optional(string, "Protected Main")
     enforcement                       = optional(string, "active")
     include_refs                      = optional(list(string), ["~DEFAULT_BRANCH"])
-    required_approving_review_count   = optional(number, 1)
+    required_approving_review_count   = optional(number, 0)
     require_last_push_approval        = optional(bool, false)
     require_code_owner_review         = optional(bool, false)
     required_review_thread_resolution = optional(bool, true)

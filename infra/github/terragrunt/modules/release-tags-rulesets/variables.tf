@@ -4,7 +4,7 @@ variable "repositories" {
   type = map(object({
     ruleset_name         = optional(string, "Release Tags")
     enforcement          = optional(string, "active")
-    include_refs         = optional(list(string), ["v*"])
+    include_refs         = optional(list(string), ["refs/tags/v*"])
     restrict_tag_updates = optional(bool, true)
     block_tag_deletion   = optional(bool, true)
     required_signatures  = optional(bool, false)
