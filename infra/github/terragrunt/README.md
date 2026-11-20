@@ -6,12 +6,10 @@ The current AWS control plane still lives under [`infra/terragrunt`](../../terra
 
 ## Structure
 
-- `data/`
-  - shared inventory data for Terragrunt-managed GitHub state
-- `modules/`
-  - reusable Terraform modules for GitHub standards
-- `live/`
-  - Terragrunt deployment units that apply those standards to the org
+- `config/repositories.yaml`: every managed repository and what it gets (rulesets,
+  required checks, a production environment). Adding a repo means adding an entry here.
+- `modules/repositories/`: everything managed about each repository, for each entry
+- `live/repositories/`: applies it (one stack, one state, one plan for the whole org)
 
 ## Authentication
 
@@ -20,11 +18,11 @@ The current AWS control plane still lives under [`infra/terragrunt`](../../terra
 
 ## Current Slices
 
-Two repository rulesets across the managed repos, and a production environment where a repo deploys:
+Per repository, as listed in `config/repositories.yaml`:
 
 - `protected-main`
   - pull requests required
-  - each repo's `required_checks` (in `data/repositories.yaml`) must pass, reported by GitHub Actions
+  - each repo's `required_checks` (in `config/repositories.yaml`) must pass, reported by GitHub Actions
   - no approvals required (solo org), but every change still goes through a PR
   - review threads must be resolved
   - linear history required
