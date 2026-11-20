@@ -33,6 +33,16 @@ inputs = {
     "arn:aws:iam::aws:policy/ReadOnlyAccess",
   ]
 
+  # ReadOnlyAccess for configuration, but no reading of data contents.
+  deny_data_reads = true
+  data_read_allowed_s3_object_arns = [
+    "arn:aws:s3:::amcaughan-tf-state-us-east-2/data-simulator-elt/*",
+  ]
+  data_read_allowed_ssm_parameter_paths = [
+    "/network/*",  # shared VPC IDs published by personal_infra
+    "/services/*", # service outputs, incl. this repo's own parameters
+  ]
+
   inline_policy_jsons = {
     tf_state_backend = jsonencode({
       Version = "2012-10-17"
