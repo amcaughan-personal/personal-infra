@@ -14,6 +14,7 @@ variable "repositories" {
     required_signatures               = optional(bool, false)
     block_branch_deletion             = optional(bool, true)
     block_force_pushes                = optional(bool, true)
+    required_checks                   = optional(list(string), []) # check names that must pass before merging
     bypass_actors = optional(list(object({
       actor_id    = number
       actor_type  = string

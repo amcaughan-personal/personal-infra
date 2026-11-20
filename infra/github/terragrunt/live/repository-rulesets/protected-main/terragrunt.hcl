@@ -7,7 +7,7 @@ locals {
 
   protected_main_repositories = {
     for repository_name, repository in local.repository_data.repositories :
-    repository_name => {}
+    repository_name => { required_checks = try(repository.required_checks, []) }
     if contains(try(repository.rulesets, []), "protected_main")
   }
 }
