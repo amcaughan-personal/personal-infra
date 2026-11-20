@@ -12,5 +12,5 @@ terraform {
 
 inputs = {
   repositories         = local.config.repositories
-  production_reviewers = local.config.production_reviewers
+  deploy_reviewers     = local.config.deploy_reviewers
 }
