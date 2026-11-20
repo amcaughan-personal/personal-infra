@@ -1,3 +1,5 @@
+data "aws_partition" "current" {}
+
 data "aws_region" "current" {}
 
 data "aws_ssm_parameter" "al2023_ami" {
@@ -24,7 +26,7 @@ resource "aws_iam_role" "this" {
 
 resource "aws_iam_role_policy_attachment" "ssm_core" {
   role       = aws_iam_role.this.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_instance_profile" "this" {
