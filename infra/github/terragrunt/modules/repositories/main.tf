@@ -16,6 +16,8 @@ locals {
 # --------------------------------------------------------------------------------------
 
 resource "github_repository" "this" {
+  #checkov:skip=CKV_GIT_1:Public on purpose: these repos are a public portfolio
+  #checkov:skip=CKV2_GIT_1:Main is protected by the Protected Main ruleset below; Checkov only recognises classic branch protection
   for_each = var.repositories
 
   name         = each.key
