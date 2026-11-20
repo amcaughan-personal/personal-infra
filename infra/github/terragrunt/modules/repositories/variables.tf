@@ -2,10 +2,12 @@ variable "repositories" {
   description = "Managed repositories, from config/repositories.yaml."
 
   type = map(object({
-    rulesets               = optional(list(string), []) # "protected_main", "release_tags"
+    protected_main         = optional(bool, true)       # PRs required on main (the Protected Main ruleset)
     required_checks        = optional(list(string), []) # must pass before merging to main
     production_environment = optional(bool, false)      # deploys from main, after approval
 
+    template     = optional(string)      # create from this template repo in the org (new repos only)
+    is_template  = optional(bool, false) # this repo is a template others can be created from
     description  = optional(string, "")
     homepage_url = optional(string, "")
     topics       = optional(list(string), [])
@@ -21,13 +23,6 @@ variable "repositories" {
     secret_scanning_push_protection = optional(bool, true)
   }))
 
-  validation {
-    condition = alltrue(flatten([
-      for repository in values(var.repositories) :
-      [for ruleset in repository.rulesets : contains(["protected_main", "release_tags"], ruleset)]
-    ]))
-    error_message = "rulesets can contain protected_main and release_tags."
-  }
 }
 
 variable "production_reviewers" {
