@@ -31,13 +31,13 @@ Per entry in `config/repositories.yaml` (set only what differs from the defaults
   - the repo's `required_checks` must pass, reported by GitHub Actions
   - linear history; no force pushes or branch deletion
   - admins can bypass, but only through a PR
-- **A `production` environment** (with `production_environment: true`)
-  - deploys only from `main`
-  - a reviewer from `production_reviewers` must approve each deploy; admins can't bypass
-    (remove every reviewer for pure CI/CD; main-only still applies)
-  - a repo's AWS deploy role trusts only jobs in this environment (OIDC subject
-    `repo:amcaughan-personal/<repo>:environment:production`), so the approval can't be skipped
-    by editing a workflow
+- **Deployment environments** (e.g. `environments: { staging: {}, production: { approval: true } }`)
+  - deploy only from `main`
+  - with `approval: true`, a reviewer from `deploy_reviewers` must approve each deploy;
+    admins can't bypass (set `approval: false` for pure CI/CD; main-only still applies)
+  - a repo's AWS deploy role for an environment trusts only jobs in it (OIDC subject
+    `repo:amcaughan-personal/<repo>:environment:<name>`), so neither rule can be skipped by
+    editing a workflow
 
 ## Creating a repository
 

@@ -2,9 +2,13 @@ variable "repositories" {
   description = "Managed repositories, from config/repositories.yaml."
 
   type = map(object({
-    protected_main         = optional(bool, true)       # PRs required on main (the Protected Main ruleset)
-    required_checks        = optional(list(string), []) # must pass before merging to main
-    production_environment = optional(bool, false)      # deploys from main, after approval
+    protected_main  = optional(bool, true)       # PRs required on main (the Protected Main ruleset)
+    required_checks = optional(list(string), []) # must pass before merging to main
+    # Deployment environments, e.g. { staging = {}, production = { approval = true } }.
+    # All deploy only from main; approval = true also needs a reviewer to approve.
+    environments = optional(map(object({
+      approval = optional(bool, false)
+    })), {})
 
     template     = optional(string)      # create from this template repo in the org (new repos only)
     is_template  = optional(bool, false) # this repo is a template others can be created from
@@ -25,7 +29,7 @@ variable "repositories" {
 
 }
 
-variable "production_reviewers" {
-  description = "GitHub users who can approve production deploys."
+variable "deploy_reviewers" {
+  description = "GitHub users who approve deploys to environments with approval = true."
   type        = list(string)
 }

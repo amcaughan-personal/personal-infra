@@ -1,5 +1,5 @@
 # Everything managed about each repository: its settings, the Protected Main ruleset and
-# a production environment.
+# its deployment environments.
 # config/repositories.yaml lists the repositories and what each one gets.
 
 locals {
@@ -7,7 +7,12 @@ locals {
   admin_role_id = 5
 
   protected_main = { for name, repo in var.repositories : name => repo if repo.protected_main }
-  production     = { for name, repo in var.repositories : name => repo if repo.production_environment }
+  environments = merge([
+    for name, repo in var.repositories : {
+      for environment, settings in repo.environments :
+      "${name}/${environment}" => { repository = name, environment = environment, approval = settings.approval }
+    }
+  ]...)
 }
 
 # --------------------------------------------------------------------------------------
@@ -130,28 +135,28 @@ resource "github_repository_ruleset" "protected_main" {
 }
 
 # --------------------------------------------------------------------------------------
-# Production environment: deploys from main only, after a reviewer approves. AWS deploy
-# roles trust only jobs in this environment (OIDC subject
-# repo:<org>/<repo>:environment:production), so the approval can't be skipped.
-# Remove every reviewer to deploy without approval (pure CI/CD); main-only still applies.
+# Deployment environments: deploy only from main; those with approval = true also wait for
+# a reviewer. A repo's AWS deploy roles trust only jobs in their environment (OIDC subject
+# repo:<org>/<repo>:environment:<name>), so neither rule can be skipped by editing a
+# workflow. Set approval = false (or remove every reviewer) for pure CI/CD.
 # --------------------------------------------------------------------------------------
 
 data "github_user" "reviewer" {
-  for_each = toset(var.production_reviewers)
+  for_each = toset(var.deploy_reviewers)
   username = each.value
 }
 
-resource "github_repository_environment" "production" {
-  for_each = local.production
+resource "github_repository_environment" "this" {
+  for_each = local.environments
 
-  repository  = each.key
-  environment = "production"
+  repository  = each.value.repository
+  environment = each.value.environment
 
   can_admins_bypass   = false
   prevent_self_review = false # a solo maintainer approves their own deploys
 
   dynamic "reviewers" {
-    for_each = length(var.production_reviewers) > 0 ? [1] : []
+    for_each = each.value.approval && length(var.deploy_reviewers) > 0 ? [1] : []
     content {
       users = [for user in data.github_user.reviewer : user.id]
     }
@@ -164,9 +169,20 @@ resource "github_repository_environment" "production" {
 }
 
 resource "github_repository_environment_deployment_policy" "deploy_branch" {
-  for_each = local.production
+  for_each = local.environments
 
-  repository     = each.key
-  environment    = github_repository_environment.production[each.key].environment
+  repository     = each.value.repository
+  environment    = github_repository_environment.this[each.key].environment
   branch_pattern = "main"
+}
+
+# Renamed from the production-only version; same environment, same state.
+moved {
+  from = github_repository_environment.production["data-simulator-api"]
+  to   = github_repository_environment.this["data-simulator-api/production"]
+}
+
+moved {
+  from = github_repository_environment_deployment_policy.deploy_branch["data-simulator-api"]
+  to   = github_repository_environment_deployment_policy.deploy_branch["data-simulator-api/production"]
 }

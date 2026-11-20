@@ -1,5 +1,5 @@
-# Who can approve deploys to any repo's production environment.
-production_reviewers:
+# Who approves deploys to environments with `approval: true`.
+deploy_reviewers:
   - amcaughan
 
 # Each repo gets the org's standard settings and Protected Main (see modules/repositories);
@@ -8,8 +8,12 @@ production_reviewers:
 repositories:
   data-simulator-api:
     description: "An API designed to be used to simulate generic sorts of data for testing"
-    # Deploys from main only, after approval; its AWS deploy role trusts only this environment.
-    production_environment: true
+    # Both deploy from main only; production also waits for approval. Each environment's
+    # AWS deploy role trusts only jobs in that environment.
+    environments:
+      staging: {}
+      production:
+        approval: true
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
