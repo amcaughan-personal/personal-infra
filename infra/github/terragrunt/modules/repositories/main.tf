@@ -7,6 +7,18 @@ locals {
   admin_role_id = 5
 
   protected_main = { for name, repo in var.repositories : name => repo if repo.protected_main }
+  releases       = { for name, repo in var.repositories : name => repo if repo.releases }
+
+  # A merged PR with one of these labels bumps that part of the version; otherwise patch.
+  release_labels = {
+    "release: minor" = { color = "0e8a16", description = "Merging tags a new minor version (new, backwards-compatible inputs or behaviour)" }
+    "release: major" = { color = "b60205", description = "Merging tags a new major version (breaking change for callers)" }
+  }
+  release_label_pairs = merge([
+    for repo in keys(local.releases) : {
+      for label, settings in local.release_labels : "${repo}/${label}" => merge(settings, { repository = repo, name = label })
+    }
+  ]...)
   environments = merge([
     for name, repo in var.repositories : {
       for environment, settings in repo.environments :
@@ -132,6 +144,47 @@ resource "github_repository_ruleset" "protected_main" {
     actor_type  = "RepositoryRole"
     bypass_mode = "pull_request"
   }
+}
+
+# --------------------------------------------------------------------------------------
+# Releases: protected v* tags and the labels that pick the next version
+# --------------------------------------------------------------------------------------
+
+resource "github_repository_ruleset" "release_tags" {
+  for_each = local.releases
+
+  name        = "Release Tags"
+  repository  = github_repository.this[each.key].name
+  target      = "tag"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = ["refs/tags/v*"]
+      exclude = []
+    }
+  }
+
+  # New tags can be created; existing ones can't be moved or deleted (admins can, to repair).
+  rules {
+    deletion = true
+    update   = true
+  }
+
+  bypass_actors {
+    actor_id    = local.admin_role_id
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+}
+
+resource "github_issue_label" "release" {
+  for_each = local.release_label_pairs
+
+  repository  = github_repository.this[each.value.repository].name
+  name        = each.value.name
+  color       = each.value.color
+  description = each.value.description
 }
 
 # --------------------------------------------------------------------------------------

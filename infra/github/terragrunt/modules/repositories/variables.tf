@@ -4,6 +4,10 @@ variable "repositories" {
   type = map(object({
     protected_main  = optional(bool, true)       # PRs required on main (the Protected Main ruleset)
     required_checks = optional(list(string), []) # must pass before merging to main
+    # Versioned with automatic tags: every merge to main is tagged v<major>.<minor>.<patch>
+    # (by the repo's own workflow). Adds the release labels that choose a bigger bump, and
+    # protects v* tags from being moved or deleted.
+    releases = optional(bool, false)
     # Deployment environments, e.g. { staging = {}, production = { approval = true } }.
     # All deploy only from main; approval = true also needs a reviewer to approve.
     environments = optional(map(object({

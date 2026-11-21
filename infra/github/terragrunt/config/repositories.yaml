@@ -47,6 +47,8 @@ repositories:
       - "security / actionlint / actionlint"
 
   shared_workflows:
+    # Every merge is tagged (v1.2.3) so other repos' Dependabot can bump their pins.
+    releases: true
     description: "Reusable GitHub Actions workflows: Python checks, security scans, PR reports"
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:

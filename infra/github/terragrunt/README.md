@@ -17,7 +17,7 @@ AWS credentials are all you need: state is in the shared S3 bucket, and the GitH
 comes from SSM.
 
 - **The token** is a fine-grained GitHub token for `amcaughan-personal` (all repositories;
-  Administration, Environments and Variables read and write, Contents read). It lives in
+  Administration, Environments, Issues (for labels) and Variables read and write, Contents read). It lives in
   the SecureString `/personal_infra/github-terraform-token` (created empty by
   `infra/aws/terragrunt/live/identity/github-terraform-token`; the value is set by hand).
 - `root.hcl` reads it at run time and passes it to Terraform as `GITHUB_TOKEN`, so it never
