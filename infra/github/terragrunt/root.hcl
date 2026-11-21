@@ -26,17 +26,21 @@ remote_state {
   }
 }
 
-# The GitHub provider's token: a fine-grained token (repository administration,
-# environments and variables in amcaughan-personal) kept in SSM and stored by hand (see
-# live/identity/github-terraform-token in the AWS tree). It's passed to Terraform as an
-# environment variable, so it never lands in generated files, state or output.
+# The GitHub provider authenticates as the org's GitHub App (amcaughan-personal-terraform:
+# repository administration, environments, issues and variables), which issues short-lived
+# tokens. Its App and installation IDs aren't secret; its private key is kept in SSM and
+# stored by hand (see live/identity/github-app-private-key in the AWS tree). Everything is
+# passed to Terraform as environment variables, so the key never lands in generated files,
+# state or output.
 terraform {
-  extra_arguments "github_token" {
+  extra_arguments "github_app" {
     commands = ["init", "plan", "apply", "destroy", "import", "refresh", "state", "show", "output", "console"]
     env_vars = {
-      GITHUB_TOKEN = run_cmd(
+      GITHUB_APP_ID              = "5857621"
+      GITHUB_APP_INSTALLATION_ID = "184228691"
+      GITHUB_APP_PEM_FILE = run_cmd(
         "--terragrunt-quiet", "aws", "ssm", "get-parameter", "--region", local.aws_region,
-        "--name", "/personal_infra/github-terraform-token", "--with-decryption",
+        "--name", "/personal-infra/github-app-private-key", "--with-decryption",
         "--query", "Parameter.Value", "--output", "text",
       )
     }
@@ -55,6 +59,9 @@ variable "github_owner" {
 
 provider "github" {
   owner = var.github_owner
+
+  # Credentials come from the GITHUB_APP_* environment variables set above.
+  app_auth {}
 }
 
 # Reads values other repos publish for their workflows (see modules/repositories).

@@ -13,20 +13,23 @@ repository's settings, rules and environments. The AWS account lives alongside i
 
 ## Authentication
 
-AWS credentials are all you need: state is in the shared S3 bucket, and the GitHub token
-comes from SSM.
+AWS credentials are all you need: state is in the shared S3 bucket, and the GitHub
+credentials come from SSM.
 
-- **The token** is a fine-grained GitHub token for `amcaughan-personal` (all repositories;
-  Administration, Environments, Issues (for labels) and Variables read and write, Contents read). It lives in
-  the SecureString `/personal_infra/github-terraform-token` (created empty by
-  `infra/aws/terragrunt/live/identity/github-terraform-token`; the value is set by hand).
-- `root.hcl` reads it at run time and passes it to Terraform as `GITHUB_TOKEN`, so it never
-  appears in generated files, state or output.
-- **To rotate** (it expires): create a new token with the same settings, then
+- **The GitHub App** `amcaughan-personal-terraform` is installed on the org (all
+  repositories) with Administration, Environments, Issues (for labels) and Variables read and
+  write. It issues hour-long tokens, never expires as a whole, and isn't tied to a person.
+- **Its private key** lives in the SecureString `/personal-infra/github-app-private-key`
+  (created empty by `infra/aws/terragrunt/live/identity/github-app-private-key`; the value is
+  set by hand). Its App and installation IDs are in `root.hcl`.
+- `root.hcl` reads the key at run time and passes it to Terraform as an environment variable,
+  so it never appears in generated files, state or output.
+- **To replace the key** (if it may have leaked): on the App's settings page, generate a new
+  private key, store it, then delete the old key there:
 
   ```bash
-  read -rs TOKEN && aws ssm put-parameter --region us-east-2 --name /personal_infra/github-terraform-token \
-    --type SecureString --overwrite --value "$TOKEN" && unset TOKEN
+  aws ssm put-parameter --region us-east-2 --name /personal-infra/github-app-private-key \
+    --type SecureString --overwrite --value "file://<new-key>.pem" && rm <new-key>.pem
   ```
 
 ## What each repository gets
