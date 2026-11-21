@@ -65,6 +65,10 @@ repositories:
       - "security / gitleaks / gitleaks"
       - "security / actionlint / actionlint"
 
+  data-simulator-analytics:
+    description: "dbt models over the data-simulator ELT's raw payments data, tested, with a dashboard"
+    template: repo-template
+
   dev-environment:
     description: "My development environment: dotfiles (prompt, aliases, vim) and the dev container base image"
     template: repo-template
