@@ -14,6 +14,8 @@ variable "repositories" {
       approval = optional(bool, false)
     })), {})
 
+    pages = optional(bool, false) # publish GitHub Pages, built by the repo's own workflow
+
     template     = optional(string)      # create from this template repo in the org (new repos only)
     is_template  = optional(bool, false) # this repo is a template others can be created from
     description  = optional(string, "")
