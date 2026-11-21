@@ -1,4 +1,4 @@
-# The one place tool versions are set. The dev image (local-dev/dev-shell.sh), CI's format
-# check and root.hcl's version constraints all read this file.
+# The one place tool versions are set. The dev container (via mise), CI's format check and
+# root.hcl's version constraints all read this file.
 terraform 1.17.2
 terragrunt 1.2.2
