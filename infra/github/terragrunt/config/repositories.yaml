@@ -25,6 +25,12 @@ repositories:
 
   data-simulator-elt:
     description: "Pulls the data-simulator API's payments data into S3, hour by hour, for Athena"
+    # Code deploys from main only, staging first. Each environment's AWS deploy role
+    # trusts only jobs in that environment.
+    environments:
+      staging: {}
+      production:
+        approval: false # set to true to require a reviewer before production deploys
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
