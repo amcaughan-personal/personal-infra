@@ -1,12 +1,12 @@
-FROM ubuntu:22.04@sha256:f64b2ffc2f10ab8f8505aa56b2664bd846cbb9df87c7e2532e30f7667021c0e6
+FROM ubuntu:24.04@sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Pins. Every download below is checked against a SHA-256: from the publisher's SHA256SUMS
 # file where one exists, otherwise recorded here when the version was pinned.
-ARG TERRAFORM_VERSION=1.14.2
-ARG TERRAGRUNT_VERSION=v0.94.0
-ARG AWSCLI_VERSION=2.39.5
-ARG AWSCLI_SHA256=fe0553306b3d001d162bc193d3b040027aab3466b9f910b50e702c122c0f3ff9
+ARG TERRAFORM_VERSION=1.17.2
+ARG TERRAGRUNT_VERSION=v1.2.2
+ARG AWSCLI_VERSION=2.40.3
+ARG AWSCLI_SHA256=4770c06c4ecfc8ba94b60d89e6c7018ab7ea2cf5341b1ef05f6f93c5d6e8b705
 ARG SSM_PLUGIN_VERSION=1.2.896.0
 ARG SSM_PLUGIN_SHA256=53f51fcc67314a4bf85888a38a3967cd41f8d0f28a60a9469a63acf935ba713e
 
@@ -21,7 +21,9 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Non-root user
-RUN useradd -ms /bin/bash dev
+# uid 1000 matches the usual host user, so mounted files stay writable. (Ubuntu's image
+# ships an `ubuntu` user with that uid, so it goes first.)
+RUN userdel -r ubuntu 2>/dev/null; useradd -ms /bin/bash -u 1000 dev
 
 # AWS CLI
 RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-${AWSCLI_VERSION}.zip" -o /tmp/awscliv2.zip \
