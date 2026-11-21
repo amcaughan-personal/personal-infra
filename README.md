@@ -6,7 +6,7 @@ Personal infrastructure managed with Terragrunt and Terraform:
 
 Both trees share the same S3 state backend, local Docker tooling, and manual apply process.
 
-Tool versions (Terraform, Terragrunt) are set once in [`.tool-versions`](.tool-versions). The dev image (`local-dev/dev-shell.sh`, which rebuilds when the file changes), CI's format check and `root.hcl`'s version constraints all read it, so local runs and CI always use the same versions.
+Tool versions (Terraform, Terragrunt) are set once in [`.tool-versions`](.tool-versions). The dev container, CI's format check and `root.hcl`'s version constraints all read it, so local runs and CI always use the same versions.
 The AWS side defines a small, opinionated baseline focused on:
 - account-level security visibility
 - high-signal alerts
@@ -38,7 +38,12 @@ Usage
 
 This repo is applied manually via Terragrunt. CI is limited to static analysis and security scanning.
 
-Local tooling lives under `local-dev/`.
+Work inside the dev container: in VS Code, *Reopen in Container* (`.devcontainer/`). It has the AWS CLI and, through [mise](https://mise.jdx.dev), the Terraform and Terragrunt versions from `.tool-versions`, with `~/.aws` mounted. Without VS Code:
+
+```bash
+docker build -f .devcontainer/Dockerfile -t personal-infra-dev .
+docker run --rm -it -v "$PWD:/workspace" -v "$HOME/.aws:/home/dev/.aws" personal-infra-dev
+```
 
 Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
 - `vpc`

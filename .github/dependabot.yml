@@ -16,7 +16,7 @@ updates:
       - dependency-name: "amcaughan-personal/*"
   - package-ecosystem: docker
     directories:
-      - /local-dev/docker
+      - /.devcontainer
     schedule:
       interval: weekly
     cooldown:
