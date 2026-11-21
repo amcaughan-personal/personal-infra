@@ -175,3 +175,41 @@ resource "github_repository_environment_deployment_policy" "deploy_branch" {
   environment    = github_repository_environment.this[each.key].environment
   branch_pattern = "main"
 }
+
+# --------------------------------------------------------------------------------------
+# Environment variables published by other repos: an SSM parameter at
+# /github/<repo>/<environment>/<NAME> becomes the variable <NAME> in that repo's
+# environment, so workflows read vars.<NAME> instead of hard-coding values. Parameters
+# for environments not managed here are ignored. These are not secrets (URLs, role ARNs),
+# so they're unmarked from the provider's blanket "sensitive".
+# --------------------------------------------------------------------------------------
+
+data "aws_ssm_parameters_by_path" "published" {
+  path      = "/github/"
+  recursive = true
+}
+
+locals {
+  published = zipmap(
+    [for name in data.aws_ssm_parameters_by_path.published.names : trimprefix(name, "/github/")],
+    nonsensitive(data.aws_ssm_parameters_by_path.published.values),
+  )
+
+  environment_variables = {
+    for path, value in local.published : path => {
+      environment = join("/", slice(split("/", path), 0, 2))
+      name        = split("/", path)[2]
+      value       = value
+    }
+    if length(split("/", path)) == 3 && contains(keys(local.environments), join("/", slice(split("/", path), 0, 2)))
+  }
+}
+
+resource "github_actions_environment_variable" "published" {
+  for_each = local.environment_variables
+
+  repository    = github_repository_environment.this[each.value.environment].repository
+  environment   = github_repository_environment.this[each.value.environment].environment
+  variable_name = each.value.name
+  value         = each.value.value
+}
