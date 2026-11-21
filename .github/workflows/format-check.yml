@@ -24,11 +24,8 @@ jobs:
             terraform_modules_dir: infra/github/terragrunt/modules
             terragrunt_working_dir: infra/github/terragrunt
             run_bash_syntax_check: false
-    uses: amcaughan-personal/shared_workflows/.github/workflows/format-check.yml@7b1b31cdfb17b58024657fbbb800a5f66bd7a64b
+    uses: amcaughan-personal/shared_workflows/.github/workflows/format-check.yml@e00e5a5af623388d01660900149a876d2027bacf
     with:
       terraform_modules_dir: ${{ matrix.terraform_modules_dir }}
       terragrunt_working_dir: ${{ matrix.terragrunt_working_dir }}
       run_bash_syntax_check: ${{ matrix.run_bash_syntax_check }}
-      # Keep in sync with TERRAFORM_VERSION / TERRAGRUNT_VERSION in local-dev/docker/Dockerfile
-      terraform_version: "1.17.2"
-      terragrunt_version: "v1.2.2"

@@ -3,8 +3,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Pins. Every download below is checked against a SHA-256: from the publisher's SHA256SUMS
 # file where one exists, otherwise recorded here when the version was pinned.
-ARG TERRAFORM_VERSION=1.17.2
-ARG TERRAGRUNT_VERSION=v1.2.2
+# Set from .tool-versions by local-dev/dev-shell.sh.
+ARG TERRAFORM_VERSION
+ARG TERRAGRUNT_VERSION
 ARG AWSCLI_VERSION=2.40.3
 ARG AWSCLI_SHA256=4770c06c4ecfc8ba94b60d89e6c7018ab7ea2cf5341b1ef05f6f93c5d6e8b705
 ARG SSM_PLUGIN_VERSION=1.2.896.0
@@ -49,8 +50,8 @@ RUN cd /tmp \
 
 # Terragrunt
 RUN cd /tmp \
-  && curl -fsSLO "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/terragrunt_linux_amd64" \
-  && curl -fsSLO "https://github.com/gruntwork-io/terragrunt/releases/download/${TERRAGRUNT_VERSION}/SHA256SUMS" \
+  && curl -fsSLO "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/terragrunt_linux_amd64" \
+  && curl -fsSLO "https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}/SHA256SUMS" \
   && grep " terragrunt_linux_amd64$" SHA256SUMS | sha256sum -c - \
   && install -m 0755 terragrunt_linux_amd64 /usr/local/bin/terragrunt \
   && rm -f terragrunt_linux_amd64 SHA256SUMS

@@ -2,10 +2,11 @@
 
 Personal infrastructure managed with Terragrunt and Terraform:
 - **AWS**: my personal AWS account, under `infra/aws/terragrunt`
-- **GitHub**: repository rulesets for the `amcaughan-personal` org, under [`infra/github/terragrunt`](infra/github/terragrunt/README.md)
+- **GitHub**: the `amcaughan-personal` org's repositories, rulesets and environments, under [`infra/github/terragrunt`](infra/github/terragrunt/README.md)
 
 Both trees share the same S3 state backend, local Docker tooling, and manual apply process.
 
+Tool versions (Terraform, Terragrunt) are set once in [`.tool-versions`](.tool-versions). The dev image (`local-dev/dev-shell.sh`, which rebuilds when the file changes), CI's format check and `root.hcl`'s version constraints all read it, so local runs and CI always use the same versions.
 The AWS side defines a small, opinionated baseline focused on:
 - account-level security visibility
 - high-signal alerts

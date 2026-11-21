@@ -76,12 +76,35 @@ collect_docker_env_args() {
   printf '%s\n' "${docker_env_args[@]}"
 }
 
+# Tool versions come from the repo's .tool-versions, the same file CI and root.hcl read.
+tool_version() {
+  awk -v tool="$1" '$1 == tool {print $2}' "$REPO_ROOT/.tool-versions"
+}
+
+tool_versions_label() {
+  grep -v '^#' "$REPO_ROOT/.tool-versions" | sha256sum | cut -c1-12
+}
+
+build_args() {
+  printf '%s\n' \
+    --build-arg "TERRAFORM_VERSION=$(tool_version terraform)" \
+    --build-arg "TERRAGRUNT_VERSION=$(tool_version terragrunt)" \
+    --label "tool-versions=$(tool_versions_label)"
+}
+
 build() {
-  docker build -f "$DOCKERFILE" -t "$IMAGE_NAME" "$BUILD_CONTEXT"
+  mapfile -t args < <(build_args)
+  docker build "${args[@]}" -f "$DOCKERFILE" -t "$IMAGE_NAME" "$BUILD_CONTEXT"
 }
 
 rebuild() {
-  docker build --no-cache -f "$DOCKERFILE" -t "$IMAGE_NAME" "$BUILD_CONTEXT"
+  mapfile -t args < <(build_args)
+  docker build --no-cache "${args[@]}" -f "$DOCKERFILE" -t "$IMAGE_NAME" "$BUILD_CONTEXT"
+}
+
+# True when the image was built from the current .tool-versions.
+image_current() {
+  [[ "$(docker image inspect -f '{{ index .Config.Labels "tool-versions" }}' "$IMAGE_NAME" 2>/dev/null)" == "$(tool_versions_label)" ]]
 }
 
 destroy() {
@@ -89,7 +112,7 @@ destroy() {
 }
 
 run() {
-  if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+  if ! image_current; then
     build
   fi
 
