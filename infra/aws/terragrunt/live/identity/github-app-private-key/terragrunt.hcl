@@ -8,6 +8,6 @@ terraform {
 
 inputs = {
   # Read by infra/github/terragrunt/root.hcl when running the GitHub stack.
-  name        = "/personal_infra/github-terraform-token"
-  description = "Fine-grained GitHub token for the GitHub Terraform stack (amcaughan-personal: repository administration, environments, issues, variables)"
+  name        = "/personal-infra/github-app-private-key"
+  description = "Private key (PEM) of the GitHub App the GitHub Terraform stack authenticates as"
 }
