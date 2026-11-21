@@ -26,6 +26,23 @@ remote_state {
   }
 }
 
+# The GitHub provider's token: a fine-grained token (repository administration,
+# environments and variables in amcaughan-personal) kept in SSM and stored by hand (see
+# live/identity/github-terraform-token in the AWS tree). It's passed to Terraform as an
+# environment variable, so it never lands in generated files, state or output.
+terraform {
+  extra_arguments "github_token" {
+    commands = ["init", "plan", "apply", "destroy", "import", "refresh", "state", "show", "output", "console"]
+    env_vars = {
+      GITHUB_TOKEN = run_cmd(
+        "--terragrunt-quiet", "aws", "ssm", "get-parameter", "--region", local.aws_region,
+        "--name", "/personal_infra/github-terraform-token", "--with-decryption",
+        "--query", "Parameter.Value", "--output", "text",
+      )
+    }
+  }
+}
+
 generate "provider" {
   path      = "provider.tf"
   if_exists = "overwrite_terragrunt"

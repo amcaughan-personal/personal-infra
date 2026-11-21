@@ -13,8 +13,21 @@ repository's settings, rules and environments. The AWS account lives alongside i
 
 ## Authentication
 
-- Terraform state still uses the shared AWS S3 backend, so AWS credentials are required for backend access.
-- The GitHub provider itself expects runtime credentials from the environment, typically `GITHUB_TOKEN` or GitHub App credentials.
+AWS credentials are all you need: state is in the shared S3 bucket, and the GitHub token
+comes from SSM.
+
+- **The token** is a fine-grained GitHub token for `amcaughan-personal` (all repositories;
+  Administration, Environments and Variables read and write, Contents read). It lives in
+  the SecureString `/personal_infra/github-terraform-token` (created empty by
+  `infra/aws/terragrunt/live/identity/github-terraform-token`; the value is set by hand).
+- `root.hcl` reads it at run time and passes it to Terraform as `GITHUB_TOKEN`, so it never
+  appears in generated files, state or output.
+- **To rotate** (it expires): create a new token with the same settings, then
+
+  ```bash
+  read -rs TOKEN && aws ssm put-parameter --region us-east-2 --name /personal_infra/github-terraform-token \
+    --type SecureString --overwrite --value "$TOKEN" && unset TOKEN
+  ```
 
 ## What each repository gets
 
