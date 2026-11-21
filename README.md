@@ -38,7 +38,7 @@ Usage
 
 This repo is applied manually via Terragrunt. CI is limited to static analysis and security scanning.
 
-Work inside the dev container: in VS Code, *Reopen in Container* (`.devcontainer/`). It has the AWS CLI and, through [mise](https://mise.jdx.dev), the Terraform and Terragrunt versions from `.tool-versions`, with `~/.aws` mounted. Without VS Code:
+Work inside the dev container: in VS Code, *Reopen in Container* (`.devcontainer/`). It's the org's base image ([dev-environment](https://github.com/amcaughan-personal/dev-environment): Ubuntu, AWS CLI, [mise](https://mise.jdx.dev)) plus the Terraform and Terragrunt versions from `.tool-versions`, with `~/.aws` mounted. Without VS Code:
 
 ```bash
 docker build -f .devcontainer/Dockerfile -t personal-infra-dev .
