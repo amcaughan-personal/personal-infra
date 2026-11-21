@@ -39,6 +39,11 @@ Per entry in `config/repositories.yaml` (set only what differs from the defaults
     `repo:amcaughan-personal/<repo>:environment:<name>`), so neither rule can be skipped by
     editing a workflow
 
+- **Environment variables published by other repos**: an SSM parameter at
+  `/github/<repo>/<environment>/<NAME>` becomes the variable `<NAME>` in that environment,
+  for values like URLs and role ARNs (never secrets). A repo publishes them from its own
+  Terraform; workflows read `vars.<NAME>`.
+
 ## Creating a repository
 
 1. Add an entry, usually starting from the template:

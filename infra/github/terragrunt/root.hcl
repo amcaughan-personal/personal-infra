@@ -39,6 +39,11 @@ variable "github_owner" {
 provider "github" {
   owner = var.github_owner
 }
+
+# Reads values other repos publish for their workflows (see modules/repositories).
+provider "aws" {
+  region = "${local.aws_region}"
+}
 EOF
 }
 
