@@ -62,6 +62,13 @@ repositories:
   dev-environment:
     description: "My development environment: dotfiles (prompt, aliases, vim) and the dev container base image"
     template: repo-template
+    required_checks:
+      - "build"
+      - "dotfiles"
+      - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
 
   repo-template:
     description: "Starting point for new repos: security scans, secret-scanning hook, README skeleton"
