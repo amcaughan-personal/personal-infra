@@ -1,4 +1,4 @@
-# personal_infra
+# personal-infra
 
 Personal infrastructure managed with Terragrunt and Terraform:
 - **AWS**: my personal AWS account, under `infra/aws/terragrunt`

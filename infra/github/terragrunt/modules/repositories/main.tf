@@ -98,7 +98,7 @@ resource "github_repository_ruleset" "protected_main" {
   for_each = local.protected_main
 
   name        = "Protected Main"
-  repository  = each.key
+  repository  = github_repository.this[each.key].name
   target      = "branch"
   enforcement = "active"
 
@@ -202,7 +202,7 @@ data "github_user" "reviewer" {
 resource "github_repository_environment" "this" {
   for_each = local.environments
 
-  repository  = each.value.repository
+  repository  = github_repository.this[each.value.repository].name
   environment = each.value.environment
 
   can_admins_bypass   = false
@@ -224,7 +224,7 @@ resource "github_repository_environment" "this" {
 resource "github_repository_environment_deployment_policy" "deploy_branch" {
   for_each = local.environments
 
-  repository     = each.value.repository
+  repository     = github_repository.this[each.value.repository].name
   environment    = github_repository_environment.this[each.key].environment
   branch_pattern = "main"
 }
