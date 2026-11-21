@@ -24,11 +24,11 @@ repositories:
       - "security / actionlint / actionlint"
 
   data-simulator-elt:
-    description: "Sample ELT job that reads from my data-simulator-API"
+    description: "Pulls the data-simulator API's payments data into S3, hour by hour, for Athena"
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
-      - "unit-tests"
+      - "python / python"
       - "security / checkov / checkov"
       - "security / trivy / trivy"
       - "security / gitleaks / gitleaks"
