@@ -82,11 +82,19 @@ resource "github_repository" "this" {
 
   archive_on_destroy = true
 
+  # Pages sites are built and deployed by the repo's own workflow (GitHub Actions); this
+  # only turns Pages on.
+  dynamic "pages" {
+    for_each = each.value.pages ? [1] : []
+    content {
+      build_type = "workflow"
+    }
+  }
+
   lifecycle {
     prevent_destroy = true
-    # Pages is configured by each repo's own workflow. auto_init and template only
-    # matter when a repo is created.
-    ignore_changes = [pages, auto_init, template]
+    # auto_init and template only matter when a repo is created.
+    ignore_changes = [auto_init, template]
   }
 }
 
