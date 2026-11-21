@@ -34,7 +34,7 @@ repositories:
       - "security / gitleaks / gitleaks"
       - "security / actionlint / actionlint"
 
-  personal_infra:
+  personal-infra:
     description: "AWS Infra stuff for my personal account"
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
@@ -46,7 +46,7 @@ repositories:
       - "security / gitleaks / gitleaks"
       - "security / actionlint / actionlint"
 
-  shared_workflows:
+  shared-workflows:
     # Every merge is tagged (v1.2.3) so other repos' Dependabot can bump their pins.
     releases: true
     description: "Reusable GitHub Actions workflows: Python checks, security scans, PR reports"

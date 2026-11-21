@@ -39,7 +39,7 @@ inputs = {
     "arn:aws:s3:::amcaughan-tf-state-us-east-2/data-simulator-elt/*",
   ]
   data_read_allowed_ssm_parameter_paths = [
-    "/network/*",  # shared VPC IDs published by personal_infra
+    "/network/*",  # shared VPC IDs published by personal-infra
     "/services/*", # service outputs, incl. this repo's own parameters
   ]
 
