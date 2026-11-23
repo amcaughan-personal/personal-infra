@@ -29,6 +29,7 @@ variable "repositories" {
     allow_merge_commit              = optional(bool, false) # squash or rebase keeps history linear
     delete_branch_on_merge          = optional(bool, true)
     vulnerability_alerts            = optional(bool, true)
+    dependabot_security_updates     = optional(bool, true) # PRs that fix alerted dependencies; needs vulnerability_alerts
     secret_scanning                 = optional(bool, true) # free for public repos
     secret_scanning_push_protection = optional(bool, true)
   }))
