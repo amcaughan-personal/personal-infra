@@ -53,7 +53,7 @@ Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
 
 That split is deliberate. The VPC itself is cheap; the interface endpoints are the part I may tear down when I'm not actively testing private connectivity.
 
-CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles`, one stack per repo. Each repo gets a read-only plan role (`github-ci-plan-<repo>`) that its pull requests can assume to run Terragrunt plans. It can read every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/network/` and `/services/` parameters.
+CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles/<repo>/`, one stack per role. Each repo gets a read-only plan role (`github-ci-plan-<repo>`, stack `<repo>/plan`) that its pull requests can assume to run Terragrunt plans. What CI roles can read comes from the `github-ci-read-access` module: every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/network/` and `/services/` parameters.
 
 Each role's ARN is published to SSM at `/github/<repo>/PLAN_ROLE_ARN`, and the GitHub stack turns it into that repo's `PLAN_ROLE_ARN` Actions secret. Any published value that contains the AWS account ID (role ARNs, ECR URLs) becomes a secret rather than a variable, so GitHub masks it in public workflow logs.
 

@@ -7,6 +7,11 @@ include "common" {
   merge_strategy = "deep"
 }
 
+# The double slash copies all of modules/, which the role module's read-access module needs.
+terraform {
+  source = "${get_repo_root()}/infra/aws/terragrunt//modules/github-ci-plan-role"
+}
+
 inputs = {
   repo = "data-simulator-analytics"
 

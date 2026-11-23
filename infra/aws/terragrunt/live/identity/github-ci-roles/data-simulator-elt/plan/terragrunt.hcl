@@ -7,10 +7,15 @@ include "common" {
   merge_strategy = "deep"
 }
 
+# The double slash copies all of modules/, which the role module's read-access module needs.
+terraform {
+  source = "${get_repo_root()}/infra/aws/terragrunt//modules/github-ci-plan-role"
+}
+
 inputs = {
-  repo = "data-simulator-api"
+  repo = "data-simulator-elt"
 
   # GitHub's immutable OIDC subject: org and repo by name and numeric ID, so a repo
   # deleted and recreated under the same name doesn't match.
-  oidc_subject_prefix = "repo:amcaughan-personal@271645414/data-simulator-api@1179137908"
+  oidc_subject_prefix = "repo:amcaughan-personal@271645414/data-simulator-elt@1179589127"
 }
