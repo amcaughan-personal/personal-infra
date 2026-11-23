@@ -109,3 +109,8 @@ repositories:
   .github:
     description: "The organization's profile page (profile/README.md)"
     template: repo-template
+    required_checks:
+      - "security / checkov / checkov"
+      - "security / trivy / trivy"
+      - "security / gitleaks / gitleaks"
+      - "security / actionlint / actionlint"
