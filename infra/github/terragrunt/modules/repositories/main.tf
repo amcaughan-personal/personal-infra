@@ -238,12 +238,18 @@ resource "github_repository_environment_deployment_policy" "deploy_branch" {
 }
 
 # --------------------------------------------------------------------------------------
-# Environment variables published by other repos: an SSM parameter at
-# /github/<repo>/<environment>/<NAME> becomes the variable <NAME> in that repo's
-# environment, so workflows read vars.<NAME> instead of hard-coding values. Parameters
-# for environments not managed here are ignored. These are not secrets (URLs, role ARNs),
-# so they're unmarked from the provider's blanket "sensitive".
+# Values published by other repos: an SSM parameter at /github/<repo>/<NAME> becomes
+# <NAME> in that repo's Actions settings, and one at /github/<repo>/<environment>/<NAME> in
+# that environment, so workflows read them instead of hard-coding values. Parameters for
+# repos or environments not managed here are ignored.
+#
+# Values that contain the AWS account ID (role ARNs, ECR URLs) become secrets, which
+# GitHub masks in public logs (secrets.<NAME>). The rest become variables (vars.<NAME>).
+# None are secret in themselves, so they're unmarked from the provider's blanket
+# "sensitive".
 # --------------------------------------------------------------------------------------
+
+data "aws_caller_identity" "current" {}
 
 data "aws_ssm_parameters_by_path" "published" {
   path      = "/github/"
@@ -251,26 +257,73 @@ data "aws_ssm_parameters_by_path" "published" {
 }
 
 locals {
-  published = zipmap(
-    [for name in data.aws_ssm_parameters_by_path.published.names : trimprefix(name, "/github/")],
-    nonsensitive(data.aws_ssm_parameters_by_path.published.values),
-  )
-
-  environment_variables = {
-    for path, value in local.published : path => {
-      environment = join("/", slice(split("/", path), 0, 2))
-      name        = split("/", path)[2]
-      value       = value
+  published = {
+    for name, value in zipmap(
+      data.aws_ssm_parameters_by_path.published.names,
+      nonsensitive(data.aws_ssm_parameters_by_path.published.values),
+    ) :
+    trimprefix(name, "/github/") => {
+      parts   = split("/", trimprefix(name, "/github/"))
+      value   = value
+      private = strcontains(value, data.aws_caller_identity.current.account_id)
     }
-    if length(split("/", path)) == 3 && contains(keys(local.environments), join("/", slice(split("/", path), 0, 2)))
+  }
+
+  # /github/<repo>/<NAME>
+  repo_values = {
+    for path, p in local.published : path => {
+      repository = p.parts[0]
+      name       = p.parts[1]
+      value      = p.value
+      private    = p.private
+    }
+    if length(p.parts) == 2 && contains(keys(var.repositories), p.parts[0])
+  }
+
+  # /github/<repo>/<environment>/<NAME>
+  environment_values = {
+    for path, p in local.published : path => {
+      environment = join("/", slice(p.parts, 0, 2))
+      name        = p.parts[2]
+      value       = p.value
+      private     = p.private
+    }
+    if length(p.parts) == 3 && contains(keys(local.environments), join("/", slice(p.parts, 0, 2)))
   }
 }
 
+resource "github_actions_variable" "published" {
+  for_each = { for path, v in local.repo_values : path => v if !v.private }
+
+  repository    = github_repository.this[each.value.repository].name
+  variable_name = each.value.name
+  value         = each.value.value
+}
+
+resource "github_actions_secret" "published" {
+  #checkov:skip=CKV_GIT_4:Values come from SSM, not code, and aren't secret in themselves; they're secrets so GitHub masks the account ID in logs
+  for_each = { for path, v in local.repo_values : path => v if v.private }
+
+  repository      = github_repository.this[each.value.repository].name
+  secret_name     = each.value.name
+  plaintext_value = each.value.value
+}
+
 resource "github_actions_environment_variable" "published" {
-  for_each = local.environment_variables
+  for_each = { for path, v in local.environment_values : path => v if !v.private }
 
   repository    = github_repository_environment.this[each.value.environment].repository
   environment   = github_repository_environment.this[each.value.environment].environment
   variable_name = each.value.name
   value         = each.value.value
+}
+
+resource "github_actions_environment_secret" "published" {
+  #checkov:skip=CKV_GIT_4:Values come from SSM, not code, and aren't secret in themselves; they're secrets so GitHub masks the account ID in logs
+  for_each = { for path, v in local.environment_values : path => v if v.private }
+
+  repository      = github_repository_environment.this[each.value.environment].repository
+  environment     = github_repository_environment.this[each.value.environment].environment
+  secret_name     = each.value.name
+  plaintext_value = each.value.value
 }
