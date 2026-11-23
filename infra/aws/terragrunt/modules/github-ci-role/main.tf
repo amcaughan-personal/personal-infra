@@ -140,3 +140,13 @@ resource "aws_iam_role_policy" "plan_deny_data_reads" {
   role   = aws_iam_role.plan.id
   policy = data.aws_iam_policy_document.plan_deny_data_reads.json
 }
+
+# personal-infra's GitHub stack turns this into the repo's PLAN_ROLE_ARN Actions secret
+# (a secret because it contains the account ID, so GitHub masks it in public logs).
+resource "aws_ssm_parameter" "plan_role_arn" {
+  #checkov:skip=CKV2_AWS_34:Not a secret: a role ARN, kept out of public logs by GitHub's secret masking
+  name        = "/github/${var.repo}/PLAN_ROLE_ARN"
+  description = "Terragrunt plan role for ${var.repo} pull requests"
+  type        = "String"
+  value       = aws_iam_role.plan.arn
+}
