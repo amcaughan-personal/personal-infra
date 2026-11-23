@@ -107,6 +107,17 @@ resource "github_repository_dependabot_security_updates" "this" {
   enabled    = each.value.vulnerability_alerts && each.value.dependabot_security_updates
 }
 
+# Actions may run only when pinned to a full commit SHA, so a moved tag can't change what
+# runs. Set per repo because the GitHub App manages repositories, not the org's settings.
+resource "github_actions_repository_permissions" "this" {
+  for_each = var.repositories
+
+  repository           = github_repository.this[each.key].name
+  enabled              = true
+  allowed_actions      = "all"
+  sha_pinning_required = each.value.actions_sha_pinning_required
+}
+
 # --------------------------------------------------------------------------------------
 # Protected Main: every change goes through a PR, and the repo's required checks pass
 # --------------------------------------------------------------------------------------
