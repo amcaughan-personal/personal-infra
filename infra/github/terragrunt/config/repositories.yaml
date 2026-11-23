@@ -28,10 +28,16 @@ repositories:
     description: "Pulls the data-simulator API's payments data into S3, hour by hour, for Athena"
     # Code deploys from main only, dev first. Each environment's AWS deploy role
     # trusts only jobs in that environment.
+    #
+    # Infra applies from main run in the infra-* environments, so code deploy jobs can't
+    # assume the apply role (and the reverse). Production applies wait for approval.
     environments:
       dev: {}
       production:
         approval: false # set to true to require a reviewer before production deploys
+      infra-dev: {}
+      infra-production:
+        approval: true
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
