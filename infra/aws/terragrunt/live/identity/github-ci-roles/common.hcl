@@ -1,5 +1,5 @@
-# Shared by every repo's CI role stack in this folder. Each stack adds its repo's name
-# and OIDC subject prefix.
+# Shared by every CI role stack in this folder (<repo>/plan, <repo>/apply). Each stack picks
+# its module and adds its repo's name and OIDC subject prefix.
 
 dependency "github_oidc" {
   config_path = "${get_repo_root()}/infra/aws/terragrunt/live/identity/github-oidc"
@@ -10,10 +10,6 @@ dependency "github_oidc" {
   }
 
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
-}
-
-terraform {
-  source = "${get_repo_root()}/infra/aws/terragrunt/modules/github-ci-role"
 }
 
 inputs = {
