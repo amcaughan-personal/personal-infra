@@ -301,6 +301,7 @@ resource "github_actions_variable" "published" {
 }
 
 resource "github_actions_secret" "published" {
+  #checkov:skip=CKV_GIT_4:Values come from SSM, not code, and aren't secret in themselves; they're secrets so GitHub masks the account ID in logs
   for_each = { for path, v in local.repo_values : path => v if v.private }
 
   repository      = github_repository.this[each.value.repository].name
@@ -318,6 +319,7 @@ resource "github_actions_environment_variable" "published" {
 }
 
 resource "github_actions_environment_secret" "published" {
+  #checkov:skip=CKV_GIT_4:Values come from SSM, not code, and aren't secret in themselves; they're secrets so GitHub masks the account ID in logs
   for_each = { for path, v in local.environment_values : path => v if v.private }
 
   repository      = github_repository_environment.this[each.value.environment].repository
