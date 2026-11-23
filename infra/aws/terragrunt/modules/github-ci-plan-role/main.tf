@@ -1,6 +1,7 @@
-# A read-only plan role for one repo, used by Terragrunt plans on its pull requests. What it
-# can read is the github-ci-read-access module's: every resource's configuration but not data
-# contents, besides the repo's own state and parameters. It writes only its state locks.
+# A read-only plan role for one repo, used by Terragrunt plans on its pull requests and by
+# its scheduled drift check on main. What it can read is the github-ci-read-access module's:
+# every resource's configuration but not data contents, besides the repo's own state and
+# parameters. It writes only its state locks.
 
 data "aws_partition" "current" {}
 
@@ -24,17 +25,22 @@ data "aws_iam_policy_document" "plan_assume" {
       values   = ["sts.amazonaws.com"]
     }
 
+    # Pull requests, and jobs on main outside any environment (the scheduled drift check).
+    # Either way it's read-only.
     condition {
       test     = "StringEquals"
       variable = "${local.provider_host}:sub"
-      values   = ["${var.oidc_subject_prefix}:pull_request"]
+      values = [
+        "${var.oidc_subject_prefix}:pull_request",
+        "${var.oidc_subject_prefix}:ref:refs/heads/main",
+      ]
     }
   }
 }
 
 resource "aws_iam_role" "plan" {
   name               = "github-ci-plan-${var.repo}"
-  description        = "Read-only Terragrunt plans on ${var.repo} pull requests"
+  description        = "Read-only Terragrunt plans on ${var.repo} pull requests and main"
   assume_role_policy = data.aws_iam_policy_document.plan_assume.json
 }
 
