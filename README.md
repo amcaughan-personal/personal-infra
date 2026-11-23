@@ -57,10 +57,12 @@ CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles`, one st
 
 Each role's ARN is published to SSM at `/github/<repo>/PLAN_ROLE_ARN`, and the GitHub stack turns it into that repo's `PLAN_ROLE_ARN` Actions secret. Any published value that contains the AWS account ID (role ARNs, ECR URLs) becomes a secret rather than a variable, so GitHub masks it in public workflow logs.
 
-The roles trust GitHub's immutable OIDC subject (`repo:<org>@<org id>/<repo>@<repo id>:...`), so a repo deleted and recreated under the same name doesn't match. The org is opted in to that format with one API call, because the GitHub Terraform provider can't manage it:
+The roles trust GitHub's immutable OIDC subject (`repo:<org>@<org id>/<repo>@<repo id>:...`), so a repo deleted and recreated under the same name doesn't match. The org is opted in to that format with one API call, because the GitHub Terraform provider can't manage it. GitHub requires claim keys with it; `repo` and `context` match its default subject:
 
 ```bash
-gh api -X PUT orgs/amcaughan-personal/actions/oidc/customization/sub -F use_immutable_subject=true
+# needs the admin:org scope: gh auth refresh -h github.com -s admin:org
+echo '{"use_immutable_subject":true,"include_claim_keys":["repo","context"]}' \
+  | gh api -X PUT orgs/amcaughan-personal/actions/oidc/customization/sub --input -
 gh api repos/amcaughan-personal/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix  # check a repo
 ```
 

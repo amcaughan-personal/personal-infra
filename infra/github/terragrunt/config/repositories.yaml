@@ -9,8 +9,8 @@ repositories:
   data-simulator-api:
     description: "An API designed to be used to simulate generic sorts of data for testing"
     pages: true # the static API reference
-    # Both deploy from main only; production also waits for approval. Each environment's
-    # AWS deploy role trusts only jobs in that environment.
+    # Both deploy from main only. Each environment's AWS deploy role trusts only jobs in
+    # that environment.
     environments:
       staging: {}
       production:
