@@ -1,7 +1,7 @@
 # A read-only plan role for one repo, used by Terragrunt plans on its pull requests and by
 # its scheduled drift check on main. What it can read is the github-ci-read-access module's:
 # every resource's configuration but not data contents, besides the repo's own state and
-# parameters. It writes only its state locks.
+# parameters. It writes nothing: plans run without state locks.
 
 data "aws_partition" "current" {}
 
@@ -74,12 +74,6 @@ data "aws_iam_policy_document" "plan_state" {
     sid       = "ReadOwnState"
     actions   = ["s3:GetObject"]
     resources = ["${local.state_bucket}/${var.repo}/*"]
-  }
-
-  statement {
-    sid       = "LockOwnState"
-    actions   = ["s3:PutObject", "s3:DeleteObject"]
-    resources = ["${local.state_bucket}/${var.repo}/*.tflock"]
   }
 }
 
