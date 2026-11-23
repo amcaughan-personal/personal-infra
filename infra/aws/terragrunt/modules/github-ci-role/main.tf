@@ -127,12 +127,53 @@ data "aws_iam_policy_document" "plan_deny_data_reads" {
       "ecr:GetDownloadUrlForLayer",
       "ec2:GetConsoleOutput",
       "ec2:GetConsoleScreenshot",
-      # Secrets and keys
+      # Secrets
       "secretsmanager:GetSecretValue",
-      "kms:Decrypt",
     ]
     resources = ["*"]
   }
+
+  # Lambda decrypts a function's environment variables for whoever reads the function;
+  # nothing else may be decrypted.
+  statement {
+    sid       = "DenyDecryptExceptLambda"
+    effect    = "Deny"
+    actions   = ["kms:Decrypt"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringNotEquals"
+      variable = "kms:ViaService"
+      values   = ["lambda.${data.aws_region.current.region}.amazonaws.com"]
+    }
+  }
+}
+
+# Reads that ReadOnlyAccess doesn't cover but plans need.
+data "aws_iam_policy_document" "plan_reads" {
+  statement {
+    sid       = "ReadLambdaEnvironment"
+    actions   = ["kms:Decrypt"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["lambda.${data.aws_region.current.region}.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "ReadFlatRatePlans" # CloudFront flat-rate pricing plans
+    actions   = ["pricingplanmanager:GetSubscription", "pricingplanmanager:ListSubscriptions"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "plan_reads" {
+  name   = "plan_reads"
+  role   = aws_iam_role.plan.id
+  policy = data.aws_iam_policy_document.plan_reads.json
 }
 
 resource "aws_iam_role_policy" "plan_deny_data_reads" {
