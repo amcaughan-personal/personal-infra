@@ -98,6 +98,15 @@ resource "github_repository" "this" {
   }
 }
 
+# Dependabot opens PRs that fix dependencies with security alerts (on top of its version
+# update PRs, configured in each repo's .github/dependabot.yml).
+resource "github_repository_dependabot_security_updates" "this" {
+  for_each = var.repositories
+
+  repository = github_repository.this[each.key].name
+  enabled    = each.value.vulnerability_alerts && each.value.dependabot_security_updates
+}
+
 # --------------------------------------------------------------------------------------
 # Protected Main: every change goes through a PR, and the repo's required checks pass
 # --------------------------------------------------------------------------------------
