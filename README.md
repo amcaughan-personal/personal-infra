@@ -84,7 +84,7 @@ A stack whose plan would destroy or replace anything stops the apply; those chan
 |---|---|---|
 | `github-ci-plan-<repo>` | the repo's pull requests, and jobs on `main` outside any environment (the drift check) | read every resource's configuration and the repo's own state; no data contents or secrets |
 | `github-ci-apply-<repo>` | jobs in the repo's `infra-dev` and `infra-production` environments, which allow only `main` | create and change the repo's own resources, never delete; create IAM roles only with the repo's permissions boundary |
-| `github-ci-deploy-<repo>-<env>` | jobs in the repo's `dev` or `production` environment | update and invoke one Lambda function |
+| `github-ci-<purpose>-<repo>-<env>` | jobs in one GitHub environment of the repo, e.g. `production` for deploys | one job's permissions, e.g. deploy and invoke one Lambda function, or query the dashboard's tables |
 
 So far data-simulator-elt and data-simulator-analytics have apply roles; the API's infrastructure is applied by hand. Code deploys (the deploy roles) run on every merge that changes the code, separately from infrastructure.
 
@@ -92,7 +92,7 @@ CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles/<repo>/`
 
 A repo whose infra CI applies also gets an apply role (`github-ci-apply-<repo>`, stack `<repo>/apply`; data-simulator-elt and data-simulator-analytics). Only jobs in its `infra-*` GitHub environments, which allow only main, can assume it. It reads what the plan role reads, writes the repo's state, and may create and change, but not delete, the repo's own resources (scoped by name prefix, listed per repo in the stack). Destroys stay local applies. The repo's IAM roles must carry its permissions boundary (`github-ci-boundary-<repo>`), which caps what they can do, and the role can't change the boundary or any `github-ci-*` role or policy, so a CI apply can't grant itself more.
 
-Roles that GitHub deploys assume live here too once a repo's infra is CI-applied, since CI must not be able to change who can assume what. `github-ci-lambda-deploy-role` (stacks `<repo>/deploy-<environment>`) may update one Lambda function's code and invoke it, only from that GitHub environment; it publishes the environment's `DEPLOY_ROLE_ARN` and `FUNCTION_NAME`.
+Roles that GitHub deploys assume live here too once a repo's infra is CI-applied, since CI must not be able to change who can assume what. `github-ci-lambda-deploy-role` (stacks `<repo>/deploy-<environment>`) may update one Lambda function's code and invoke it, only from that GitHub environment; it publishes the environment's `DEPLOY_ROLE_ARN` and `FUNCTION_NAME`. `github-ci-environment-role` is the general form: a role one GitHub environment's jobs assume for one job (`purpose`), with the permissions listed in its stack, publishing its ARN and any values the workflow reads (data-simulator-analytics' deploy and dashboard roles).
 
 Role ARNs are published to SSM at `/github/<repo>/PLAN_ROLE_ARN` and `APPLY_ROLE_ARN`, and the GitHub stack turns each into that repo's Actions secret of the same name. Any published value that contains the AWS account ID (role ARNs, ECR URLs) becomes a secret rather than a variable, so GitHub masks it in public workflow logs.
 
