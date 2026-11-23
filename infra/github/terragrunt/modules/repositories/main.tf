@@ -64,7 +64,7 @@ resource "github_repository" "this" {
   allow_squash_merge          = true
   allow_rebase_merge          = true
   allow_auto_merge            = false
-  allow_update_branch         = false
+  allow_update_branch         = true # the "Update branch" button, for the up-to-date rule
   delete_branch_on_merge      = each.value.delete_branch_on_merge
   squash_merge_commit_title   = "COMMIT_OR_PR_TITLE"
   squash_merge_commit_message = "COMMIT_MESSAGES"
@@ -135,7 +135,9 @@ resource "github_repository_ruleset" "protected_main" {
     dynamic "required_status_checks" {
       for_each = length(each.value.required_checks) > 0 ? [1] : []
       content {
-        strict_required_status_checks_policy = false
+        # A PR must include the latest main before merging, so its checks (including the
+        # Terraform plan comment) ran against what will actually land.
+        strict_required_status_checks_policy = true
         dynamic "required_check" {
           for_each = each.value.required_checks
           content {
