@@ -30,6 +30,7 @@ variable "repositories" {
     delete_branch_on_merge          = optional(bool, true)
     vulnerability_alerts            = optional(bool, true)
     dependabot_security_updates     = optional(bool, true) # PRs that fix alerted dependencies; needs vulnerability_alerts
+    actions_sha_pinning_required    = optional(bool, true) # workflows may only use actions pinned to a full commit SHA
     secret_scanning                 = optional(bool, true) # free for public repos
     secret_scanning_push_protection = optional(bool, true)
   }))
