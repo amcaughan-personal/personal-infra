@@ -10,11 +10,15 @@ repositories:
     description: "An API designed to be used to simulate generic sorts of data for testing"
     pages: true # the static API reference
     # Both deploy from main only. Each environment's AWS deploy role trusts only jobs in
-    # that environment.
+    # that environment. Infra applies from main run in infra-*; production applies wait
+    # for approval.
     environments:
       staging: {}
       production:
         approval: false # set to true to require a reviewer before production deploys
+      infra-staging: {}
+      infra-production:
+        approval: true
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"

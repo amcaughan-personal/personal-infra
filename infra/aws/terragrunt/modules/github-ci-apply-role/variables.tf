@@ -45,6 +45,12 @@ variable "manage_statements" {
     sid       = string
     actions   = list(string)
     resources = list(string)
+    # e.g. a tag condition, for resources whose ARNs don't carry a name to scope by
+    conditions = optional(list(object({
+      test     = string
+      variable = string
+      values   = list(string)
+    })), [])
   }))
 }
 
@@ -54,6 +60,12 @@ variable "boundary_statements" {
     sid       = string
     actions   = list(string)
     resources = list(string)
+    # e.g. a tag condition, for resources whose ARNs don't carry a name to scope by
+    conditions = optional(list(object({
+      test     = string
+      variable = string
+      values   = list(string)
+    })), [])
   }))
 }
 
