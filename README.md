@@ -11,8 +11,6 @@ The AWS side defines a small, opinionated baseline focused on:
 - account-level security visibility
 - high-signal alerts
 - cost guardrails
-- low-friction automation for disposable resources
-- a shared low-cost dev network foundation for private service testing
 
 This is just for me personally to manage my AWS account.
 
@@ -22,9 +20,7 @@ What’s in here
 - GuardDuty with optional automated response for EC2 cryptomining
 - Account-wide S3 public access block
 - Cost controls (Budgets, Cost Anomaly Detection)
-- Scheduled automation for cleaning up opted-in disposable resources
 - Secure S3 patterns for logs and state
-- Shared dev VPC and shared endpoint stacks for private API/service experiments
 - Terragrunt-based layout for clarity and dependency management
 - Every resource tagged with `Repo` and `Stack`, so anything in the console points back to the code that manages it
 
@@ -45,13 +41,7 @@ docker build -f .devcontainer/Dockerfile -t personal-infra-dev .
 docker run --rm -it -v "$PWD:/workspace" -v "$HOME/.aws:/home/dev/.aws" personal-infra-dev
 ```
 
-Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
-- `vpc`
-  cheap shared foundation intended to stay up
-- `endpoints`
-  hourly-cost private connectivity layer intended to be easy to create/destroy
-
-That split is deliberate. The VPC itself is cheap; the interface endpoints are the part I may tear down when I'm not actively testing private connectivity.
+On a new account, run `scripts/tf-backend-setup.sh` once first: it creates the state bucket (`amcaughan-tf-state-us-east-2`) and the `/infra/alert_email` SSM parameter the alert topics subscribe.
 
 How the org's CI reaches AWS
 
@@ -88,7 +78,7 @@ A stack whose plan would destroy or replace anything stops the apply; those chan
 
 Every project repo has an apply role; a few resources each project's stack lists (e.g. creating functions from an image, or the API's CloudFront distributions and smoke-test canary) are still created by hand. Code deploys (the deploy roles) run on every merge that changes the code, separately from infrastructure.
 
-CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles/<repo>/`, one stack per role. Each repo gets a read-only plan role (`github-ci-plan-<repo>`, stack `<repo>/plan`) that its pull requests can assume to run Terragrunt plans, as can jobs on main outside any environment (its scheduled drift check). What CI roles can read comes from the `github-ci-read-access` module: every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/network/` and `/services/` parameters.
+CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles/<repo>/`, one stack per role. Each repo gets a read-only plan role (`github-ci-plan-<repo>`, stack `<repo>/plan`) that its pull requests can assume to run Terragrunt plans, as can jobs on main outside any environment (its scheduled drift check). What CI roles can read comes from the `github-ci-read-access` module: every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/services/` parameters.
 
 A repo whose infra CI applies also gets an apply role (`github-ci-apply-<repo>`, stack `<repo>/apply`; every project repo). Only jobs in its `infra-*` GitHub environments, which allow only main, can assume it. It reads what the plan role reads, writes the repo's state, and may create and change, but not delete, the repo's own resources (scoped by name prefix, or by the `Repo` tag where ARNs carry no name, listed per repo in the stack). Destroys stay local applies. The repo's IAM roles must carry its permissions boundary (`github-ci-boundary-<repo>`), which caps what they can do, and the role can't change the boundary or any `github-ci-*` role or policy, so a CI apply can't grant itself more.
 
@@ -104,10 +94,6 @@ echo '{"use_immutable_subject":true,"include_claim_keys":["repo","context"]}' \
   | gh api -X PUT orgs/amcaughan-personal/actions/oidc/customization/sub --input -
 gh api repos/amcaughan-personal/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix  # check a repo
 ```
-
-Scheduled automation stacks live under `infra/aws/terragrunt/live/automation`:
-- `cleanup-janitor`
-  daily account janitor for explicitly tagged disposable resources
 
 If you copy pieces from this repo, do so deliberately. Most modules are tightly scoped to a single-account context.
 

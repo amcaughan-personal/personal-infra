@@ -18,7 +18,6 @@ inputs = {
   state_bucket      = "amcaughan-tf-state-us-east-2"
 
   shared_ssm_parameter_paths = [
-    "/network/*",  # shared VPC IDs published by personal-infra
     "/services/*", # service URLs, e.g. the API's, read by the ELT
   ]
 }

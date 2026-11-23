@@ -28,7 +28,7 @@ variable "state_bucket" {
 }
 
 variable "shared_ssm_parameter_paths" {
-  description = "SSM parameter paths the role may read besides the repo's own, e.g. \"/network/*\"."
+  description = "SSM parameter paths the role may read besides the repo's own, e.g. \"/services/*\"."
   type        = list(string)
   default     = []
 }
