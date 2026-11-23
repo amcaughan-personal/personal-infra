@@ -53,6 +53,41 @@ Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
 
 That split is deliberate. The VPC itself is cheap; the interface endpoints are the part I may tear down when I'm not actively testing private connectivity.
 
+How the org's CI reaches AWS
+
+Project repos plan on pull requests, apply from `main` and check for drift every day. Each step signs in to AWS with GitHub OIDC as a role defined here, so no project can change its own permissions. This repo itself is applied by hand.
+
+```mermaid
+flowchart TB
+  subgraph pr ["Pull request"]
+    direction LR
+    change["Change under infra/"] --> plan["terragrunt-plan<br/>plan role, read-only"] --> comment["Plan comment<br/>addresses and types only"]
+  end
+
+  subgraph main ["Merge to main"]
+    direction LR
+    dev["Apply dev<br/>apply role, infra-dev"] --> preview["Prod plan in<br/>the run summary"] --> approval{{"Approval<br/>infra-production"}} --> prod["Apply prod<br/>apply role"]
+  end
+
+  subgraph daily ["Every morning"]
+    direction LR
+    drift["Drift check on main<br/>plan role, read-only"] --> email["Fails and emails if<br/>AWS doesn't match main"]
+  end
+
+  pr -- "merge" --> main
+  main ~~~ daily
+```
+
+A stack whose plan would destroy or replace anything stops the apply; those changes are applied by hand.
+
+| Role | Who can assume it | What it can do |
+|---|---|---|
+| `github-ci-plan-<repo>` | the repo's pull requests, and jobs on `main` outside any environment (the drift check) | read every resource's configuration and the repo's own state; no data contents or secrets |
+| `github-ci-apply-<repo>` | jobs in the repo's `infra-dev` and `infra-production` environments, which allow only `main` | create and change the repo's own resources, never delete; create IAM roles only with the repo's permissions boundary |
+| `github-ci-deploy-<repo>-<env>` | jobs in the repo's `dev` or `production` environment | update and invoke one Lambda function |
+
+So far only data-simulator-elt has an apply role; the other projects' infrastructure is applied by hand. Code deploys (the deploy roles) run on every merge that changes the code, separately from infrastructure.
+
 CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles/<repo>/`, one stack per role. Each repo gets a read-only plan role (`github-ci-plan-<repo>`, stack `<repo>/plan`) that its pull requests can assume to run Terragrunt plans, as can jobs on main outside any environment (its scheduled drift check). What CI roles can read comes from the `github-ci-read-access` module: every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/network/` and `/services/` parameters.
 
 A repo whose infra CI applies also gets an apply role (`github-ci-apply-<repo>`, stack `<repo>/apply`; so far only data-simulator-elt). Only jobs in its `infra-*` GitHub environments, which allow only main, can assume it. It reads what the plan role reads, writes the repo's state, and may create and change, but not delete, the repo's own resources (scoped by name prefix, listed per repo in the stack). Destroys stay local applies. The repo's IAM roles must carry its permissions boundary (`github-ci-boundary-<repo>`), which caps what they can do, and the role can't change the boundary or any `github-ci-*` role or policy, so a CI apply can't grant itself more.
