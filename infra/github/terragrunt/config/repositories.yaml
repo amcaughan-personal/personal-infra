@@ -79,11 +79,16 @@ repositories:
     pages: true # the dashboard
     # The dbt runner deploys from main only, dev first; the dashboard's data refresh runs in
     # `dashboard`. Each environment's AWS role trusts only jobs in that environment.
+    # Infra applies from main run in infra-*, apart from the deploy jobs; production
+    # applies wait for approval.
     environments:
       dev: {}
       production:
         approval: false # set to true to require a reviewer before production deploys
       dashboard: {}
+      infra-dev: {}
+      infra-production:
+        approval: true
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
