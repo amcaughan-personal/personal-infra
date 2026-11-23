@@ -55,10 +55,12 @@ That split is deliberate. The VPC itself is cheap; the interface endpoints are t
 
 CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles`, one stack per repo. Each repo gets a read-only plan role (`github-ci-plan-<repo>`) that its pull requests can assume to run Terragrunt plans. It can read every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/network/` and `/services/` parameters.
 
-The roles trust GitHub's immutable OIDC subject (`repo:<org>@<org id>/<repo>@<repo id>:...`), so a repo deleted and recreated under the same name doesn't match. The org is opted in to that format with one API call, because the GitHub Terraform provider can't manage it:
+The roles trust GitHub's immutable OIDC subject (`repo:<org>@<org id>/<repo>@<repo id>:...`), so a repo deleted and recreated under the same name doesn't match. The org is opted in to that format with one API call, because the GitHub Terraform provider can't manage it. GitHub requires claim keys with it; `repo` and `context` match its default subject:
 
 ```bash
-gh api -X PUT orgs/amcaughan-personal/actions/oidc/customization/sub -F use_immutable_subject=true
+# needs the admin:org scope: gh auth refresh -h github.com -s admin:org
+echo '{"use_immutable_subject":true,"include_claim_keys":["repo","context"]}' \
+  | gh api -X PUT orgs/amcaughan-personal/actions/oidc/customization/sub --input -
 gh api repos/amcaughan-personal/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix  # check a repo
 ```
 
