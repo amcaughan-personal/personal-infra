@@ -53,6 +53,15 @@ Shared dev network stacks live under `infra/aws/terragrunt/live/network/dev`:
 
 That split is deliberate. The VPC itself is cheap; the interface endpoints are the part I may tear down when I'm not actively testing private connectivity.
 
+CI roles live under `infra/aws/terragrunt/live/identity/github-ci-roles`, one stack per repo. Each repo gets a read-only plan role (`github-ci-plan-<repo>`) that its pull requests can assume to run Terragrunt plans. It can read every resource's configuration, but not data contents, except that repo's own Terraform state and `/github/<repo>/` SSM parameters plus the shared `/network/` and `/services/` parameters.
+
+The roles trust GitHub's immutable OIDC subject (`repo:<org>@<org id>/<repo>@<repo id>:...`), so a repo deleted and recreated under the same name doesn't match. The org is opted in to that format with one API call, because the GitHub Terraform provider can't manage it:
+
+```bash
+gh api -X PUT orgs/amcaughan-personal/actions/oidc/customization/sub -F use_immutable_subject=true
+gh api repos/amcaughan-personal/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix  # check a repo
+```
+
 Scheduled automation stacks live under `infra/aws/terragrunt/live/automation`:
 - `cleanup-janitor`
   daily account janitor for explicitly tagged disposable resources
