@@ -7,7 +7,9 @@ deploy_reviewers:
 # `template: repo-template`; add required_checks once its workflows have run on a PR.
 repositories:
   data-simulator-api:
-    description: "An API designed to be used to simulate generic sorts of data for testing"
+    description: "Synthetic data API: describe your columns and distributions, get realistic rows or an endless stream. FastAPI on Lambda, CloudFront, canary deploys"
+    homepage_url: "https://amcaughan-personal.github.io/data-simulator-api/"
+    topics: [synthetic-data, fastapi, aws-lambda, cloudfront, terraform, terragrunt]
     pages: true # the static API reference
     # Both deploy from main only. Each environment's AWS deploy role trusts only jobs in
     # that environment. Infra applies from main run in infra-*; production applies wait
@@ -29,7 +31,8 @@ repositories:
       - "security / actionlint / actionlint"
 
   data-simulator-elt:
-    description: "Pulls the data-simulator API's payments data into S3, hour by hour, for Athena"
+    description: "Hourly ingest of the data-simulator API's payments feed into S3, queryable in Athena"
+    topics: [data-engineering, elt, aws-lambda, s3, athena, glue, terragrunt]
     # Code deploys from main only, dev first. Each environment's AWS deploy role
     # trusts only jobs in that environment.
     #
@@ -52,7 +55,8 @@ repositories:
       - "security / actionlint / actionlint"
 
   personal-infra:
-    description: "AWS Infra stuff for my personal account"
+    description: "AWS account baseline (security alerts, cost guardrails, CI roles) and this GitHub org's settings, as Terraform"
+    topics: [terraform, terragrunt, aws, github-actions, oidc]
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting (aws) / formatting"
@@ -65,7 +69,8 @@ repositories:
   shared-workflows:
     # Every merge is tagged (v1.2.3) so other repos' Dependabot can bump their pins.
     releases: true
-    description: "Reusable GitHub Actions workflows: Python checks, security scans, PR reports"
+    description: "Reusable GitHub Actions workflows: Terragrunt plan and apply, Python checks, security scans"
+    topics: [github-actions, reusable-workflows, terragrunt, devsecops]
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "actionlint / actionlint"
@@ -76,7 +81,8 @@ repositories:
       - "security / actionlint / actionlint"
 
   data-simulator-analytics:
-    description: "dbt models over the data-simulator ELT's raw payments data, tested, with a dashboard"
+    description: "dbt models (bronze, silver, gold) on Athena over the ELT's payments data, with a daily dashboard"
+    topics: [dbt, athena, analytics-engineering, data-engineering, vega-lite]
     homepage_url: "https://amcaughan-personal.github.io/data-simulator-analytics/"
     template: repo-template
     pages: true # the dashboard
@@ -103,6 +109,7 @@ repositories:
 
   dev-environment:
     description: "My development environment: dotfiles (prompt, aliases, vim) and the dev container base image"
+    topics: [devcontainer, dotfiles, docker]
     template: repo-template
     required_checks:
       - "build"
