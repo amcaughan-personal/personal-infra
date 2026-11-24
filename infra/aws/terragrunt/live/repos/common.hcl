@@ -1,4 +1,4 @@
-# Shared by every CI role stack in this folder (<repo>/plan, <repo>/apply). Each stack picks
+# Shared by every per-repo stack in this folder (<repo>/plan, <repo>/apply, ...). Each stack picks
 # its module and adds its repo's name and OIDC subject prefix.
 
 dependency "github_oidc" {
