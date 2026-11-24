@@ -82,9 +82,8 @@ resource "github_repository" "this" {
 
   lifecycle {
     prevent_destroy = true
-    # auto_init and template only matter when a repo is created. Pages is managed by
-    # github_repository_pages below.
-    ignore_changes = [auto_init, template, pages]
+    # auto_init and template only matter when a repo is created.
+    ignore_changes = [auto_init, template]
   }
 }
 
