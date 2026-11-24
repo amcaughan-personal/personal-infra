@@ -1,7 +1,8 @@
 # What a repo's CI roles may read, as policy documents for the role modules to attach. Both
 # its plan and apply roles get exactly this: every resource's configuration (ReadOnlyAccess,
 # attached by the role module) but not data contents, except the repo's own Terraform state
-# and SSM parameters and the shared parameters in var.shared_ssm_parameter_paths. Secrets
+# and SSM parameters, the shared parameters in var.shared_ssm_parameter_paths, and AWS's
+# public parameters (/aws/service/*, e.g. the latest EKS node AMI's version). Secrets
 # stay out of reach: they are set by hand and never held in the repo's state.
 
 data "aws_partition" "current" {}
@@ -11,6 +12,9 @@ data "aws_caller_identity" "current" {}
 locals {
   state_bucket  = "arn:${data.aws_partition.current.partition}:s3:::${var.state_bucket}"
   ssm_parameter = "arn:${data.aws_partition.current.partition}:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter"
+
+  # Published by AWS for every account (no account ID in the ARN), so never anyone's data.
+  aws_public_parameters = "arn:${data.aws_partition.current.partition}:ssm:${data.aws_region.current.region}::parameter/aws/service/*"
 }
 
 # Explicit denies win over ReadOnlyAccess's allows (and over any allow the role adds).
@@ -26,10 +30,10 @@ data "aws_iam_policy_document" "deny_data_reads" {
     sid     = "DenyOtherSsmParameters"
     effect  = "Deny"
     actions = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath", "ssm:GetParameterHistory"]
-    not_resources = [
-      for path in concat(["/github/${var.repo}/*"], var.shared_ssm_parameter_paths) :
-      "${local.ssm_parameter}${path}"
-    ]
+    not_resources = concat(
+      [for path in concat(["/github/${var.repo}/*"], var.shared_ssm_parameter_paths) : "${local.ssm_parameter}${path}"],
+      [local.aws_public_parameters],
+    )
   }
 
   statement {
