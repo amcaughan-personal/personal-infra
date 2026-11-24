@@ -69,8 +69,6 @@ resource "github_repository" "this" {
   squash_merge_commit_title   = "COMMIT_OR_PR_TITLE"
   squash_merge_commit_message = "COMMIT_MESSAGES"
 
-  vulnerability_alerts = each.value.vulnerability_alerts
-
   security_and_analysis {
     secret_scanning {
       status = each.value.secret_scanning ? "enabled" : "disabled"
@@ -82,20 +80,29 @@ resource "github_repository" "this" {
 
   archive_on_destroy = true
 
-  # Pages sites are built and deployed by the repo's own workflow (GitHub Actions); this
-  # only turns Pages on.
-  dynamic "pages" {
-    for_each = each.value.pages ? [1] : []
-    content {
-      build_type = "workflow"
-    }
-  }
-
   lifecycle {
     prevent_destroy = true
-    # auto_init and template only matter when a repo is created.
-    ignore_changes = [auto_init, template]
+    # auto_init and template only matter when a repo is created. Pages is managed by
+    # github_repository_pages below.
+    ignore_changes = [auto_init, template, pages]
   }
+}
+
+# Pages sites are built and deployed by the repo's own workflow (GitHub Actions); this
+# only turns Pages on.
+resource "github_repository_pages" "this" {
+  for_each = { for name, repo in var.repositories : name => repo if repo.pages }
+
+  repository = github_repository.this[each.key].name
+  build_type = "workflow"
+}
+
+# Alerts for dependencies with known vulnerabilities.
+resource "github_repository_vulnerability_alerts" "this" {
+  for_each = var.repositories
+
+  repository = github_repository.this[each.key].name
+  enabled    = each.value.vulnerability_alerts
 }
 
 # Dependabot opens PRs that fix dependencies with security alerts (on top of its version
@@ -103,7 +110,8 @@ resource "github_repository" "this" {
 resource "github_repository_dependabot_security_updates" "this" {
   for_each = var.repositories
 
-  repository = github_repository.this[each.key].name
+  # Security updates need the alerts on first.
+  repository = github_repository_vulnerability_alerts.this[each.key].repository
   enabled    = each.value.vulnerability_alerts && each.value.dependabot_security_updates
 }
 
@@ -326,9 +334,9 @@ resource "github_actions_secret" "published" {
   #checkov:skip=CKV_GIT_4:Values come from SSM, not code, and aren't secret in themselves; they're secrets so GitHub masks the account ID in logs
   for_each = { for path, v in local.repo_values : path => v if v.private }
 
-  repository      = github_repository.this[each.value.repository].name
-  secret_name     = each.value.name
-  plaintext_value = each.value.value
+  repository  = github_repository.this[each.value.repository].name
+  secret_name = each.value.name
+  value       = each.value.value
 }
 
 resource "github_actions_environment_variable" "published" {
@@ -344,8 +352,8 @@ resource "github_actions_environment_secret" "published" {
   #checkov:skip=CKV_GIT_4:Values come from SSM, not code, and aren't secret in themselves; they're secrets so GitHub masks the account ID in logs
   for_each = { for path, v in local.environment_values : path => v if v.private }
 
-  repository      = github_repository_environment.this[each.value.environment].repository
-  environment     = github_repository_environment.this[each.value.environment].environment
-  secret_name     = each.value.name
-  plaintext_value = each.value.value
+  repository  = github_repository_environment.this[each.value.environment].repository
+  environment = github_repository_environment.this[each.value.environment].environment
+  secret_name = each.value.name
+  value       = each.value.value
 }
