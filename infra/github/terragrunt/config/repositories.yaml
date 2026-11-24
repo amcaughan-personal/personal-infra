@@ -135,3 +135,13 @@ repositories:
       - "security / trivy / trivy"
       - "security / gitleaks / gitleaks"
       - "security / actionlint / actionlint"
+
+  eks-platform:
+    description: "A shared EKS cluster, brought up on demand: Karpenter, Argo CD, Airflow and monitoring, all from git"
+    topics: [kubernetes, eks, karpenter, argo-cd, gitops, terraform, terragrunt]
+    template: repo-template
+
+  data-pipelines:
+    description: "Several data pipelines on Airflow in EKS: ingest from the data-simulator API, dbt models on Athena"
+    topics: [airflow, dbt, athena, data-engineering, kubernetes]
+    template: repo-template
