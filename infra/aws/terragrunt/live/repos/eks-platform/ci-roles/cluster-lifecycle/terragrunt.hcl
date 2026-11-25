@@ -28,11 +28,11 @@ inputs = {
   purpose             = "cluster-lifecycle"
   description         = "bring the main cluster up and down"
 
-  # cluster-up.yml runs in the cluster-up environment (which needs approval); cluster-down.yml
-  # runs on main, by hand or on its nightly schedule.
+  # cluster-up.yml in the cluster-up environment (which needs approval), and cluster-down.yml
+  # in the cluster-down environment (which doesn't: it also runs every night).
   trusted = [
     { environment = "cluster-up", workflow = "cluster-up.yml" },
-    { ref = "refs/heads/main", workflow = "cluster-down.yml" },
+    { environment = "cluster-down", workflow = "cluster-down.yml" },
   ]
 
   read_access          = true
@@ -58,12 +58,20 @@ inputs = {
         format(local.arn, "eks", "podidentityassociation/${local.cluster}/*"),
       ]
     },
-    # Security groups and launch templates only when created tagged as this cluster's.
+    # Security groups and launch templates only when created tagged as this cluster's, and
+    # security groups only in the platform's VPC (CreateSecurityGroup also authorizes against
+    # the VPC, which carries no request tags).
     {
       sid        = "CreateTaggedNetworking"
       actions    = ["ec2:CreateSecurityGroup", "ec2:CreateLaunchTemplate"]
-      resources  = ["*"]
+      resources  = [format(local.arn, "ec2", "security-group/*"), format(local.arn, "ec2", "launch-template/*")]
       conditions = [{ test = "StringEquals", variable = "aws:RequestTag/Cluster", values = [local.cluster] }]
+    },
+    {
+      sid        = "SecurityGroupsInPlatformVpc"
+      actions    = ["ec2:CreateSecurityGroup"]
+      resources  = [format(local.arn, "ec2", "vpc/*")]
+      conditions = [{ test = "StringEquals", variable = "aws:ResourceTag/Repo", values = ["amcaughan-personal/eks-platform"] }]
     },
     {
       sid        = "TagOnCreate"

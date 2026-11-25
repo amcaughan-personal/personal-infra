@@ -140,11 +140,13 @@ repositories:
     description: "A shared EKS cluster, brought up on demand: Karpenter, Argo CD, Airflow and monitoring, all from git"
     topics: [kubernetes, eks, karpenter, argo-cd, gitops, terraform, terragrunt]
     template: repo-template
-    # cluster-up.yml runs here: bringing the cluster up costs money, so each run waits for
-    # approval. The cluster-lifecycle role trusts this environment and cluster-down.yml on main.
+    # The cluster-lifecycle role trusts cluster-up.yml in cluster-up and cluster-down.yml in
+    # cluster-down. Bringing the cluster up costs money, so each run waits for approval; taking
+    # it down never waits (it runs every night).
     environments:
       cluster-up:
         approval: true
+      cluster-down: {}
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
