@@ -77,7 +77,9 @@ inputs = {
       sid        = "TagOnCreate"
       actions    = ["ec2:CreateTags"]
       resources  = ["*"]
-      conditions = [{ test = "StringEquals", variable = "ec2:CreateAction", values = ["CreateSecurityGroup", "CreateLaunchTemplate"] }]
+      # Including launches: the node group's launch template tags its instances, volumes and
+      # network interfaces as they're created.
+      conditions = [{ test = "StringEquals", variable = "ec2:CreateAction", values = ["CreateSecurityGroup", "CreateLaunchTemplate", "RunInstances"] }]
     },
     {
       sid = "ChangeTaggedNetworking"
