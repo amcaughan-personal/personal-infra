@@ -143,6 +143,7 @@ repositories:
     # Must pass before merging. Only checks that run on every PR (no path filters).
     required_checks:
       - "formatting / formatting"
+      - "kubernetes / kubeconform"
       - "security / checkov / checkov"
       - "security / trivy / trivy"
       - "security / gitleaks / gitleaks"
