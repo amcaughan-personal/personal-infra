@@ -74,9 +74,9 @@ inputs = {
       conditions = [{ test = "StringEquals", variable = "aws:ResourceTag/Repo", values = ["amcaughan-personal/eks-platform"] }]
     },
     {
-      sid        = "TagOnCreate"
-      actions    = ["ec2:CreateTags"]
-      resources  = ["*"]
+      sid       = "TagOnCreate"
+      actions   = ["ec2:CreateTags"]
+      resources = ["*"]
       # Including launches: the node group's launch template tags its instances, volumes and
       # network interfaces as they're created.
       conditions = [{ test = "StringEquals", variable = "ec2:CreateAction", values = ["CreateSecurityGroup", "CreateLaunchTemplate", "RunInstances"] }]
