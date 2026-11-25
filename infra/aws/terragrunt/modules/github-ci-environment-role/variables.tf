@@ -9,8 +9,25 @@ variable "oidc_subject_prefix" {
 }
 
 variable "github_environment" {
-  description = "The GitHub environment whose jobs may assume the role. It should allow only the main branch."
+  description = "The GitHub environment whose jobs may assume the role (unless var.trusted is set), and the role name's suffix. It should allow only the main branch. Null for a role used outside one environment."
   type        = string
+  default     = null
+}
+
+variable "trusted" {
+  description = "Who may assume the role, if not just var.github_environment's jobs: each entry is an environment, or a branch (ref), optionally pinned to one workflow file in the repo (e.g. cluster-down.yml)."
+  type = list(object({
+    environment = optional(string)
+    ref         = optional(string, "refs/heads/main")
+    workflow    = optional(string)
+  }))
+  default = null
+}
+
+variable "github_owner" {
+  description = "The GitHub organization, for workflow file references."
+  type        = string
+  default     = "amcaughan-personal"
 }
 
 variable "purpose" {
@@ -29,6 +46,12 @@ variable "statements" {
     sid       = string
     actions   = list(string)
     resources = list(string)
+    # e.g. a tag condition, for resources whose ARNs don't carry a name to scope by
+    conditions = optional(list(object({
+      test     = string
+      variable = string
+      values   = list(string)
+    })), [])
   }))
 }
 
@@ -50,4 +73,28 @@ variable "oidc_provider_arn" {
 variable "provider_url" {
   type    = string
   default = "https://token.actions.githubusercontent.com"
+}
+
+variable "read_access" {
+  description = "Also read every resource's configuration (not data contents), like the plan roles."
+  type        = bool
+  default     = false
+}
+
+variable "state_write_prefixes" {
+  description = "Paths under the repo's Terraform state prefix the role may write, e.g. live/clusters/."
+  type        = list(string)
+  default     = []
+}
+
+variable "state_bucket" {
+  description = "Terraform state bucket (with read_access or state_write_prefixes)."
+  type        = string
+  default     = null
+}
+
+variable "shared_ssm_parameter_paths" {
+  description = "SSM parameter paths readable besides the repo's own (with read_access)."
+  type        = list(string)
+  default     = []
 }
