@@ -114,12 +114,14 @@ inputs = {
       resources  = [format(local.roles, "cluster"), format(local.roles, "node")]
       conditions = [{ test = "StringEquals", variable = "iam:PassedToService", values = ["eks.amazonaws.com"] }]
     },
-    # Roles the cluster's pods get through EKS Pod Identity (eks-platform's shared/), to the
-    # Pod Identity service only.
+    # Roles the cluster's pods get through EKS Pod Identity, to the Pod Identity service only:
+    # Karpenter's (eks-platform's shared/), and tenants' pod roles, named <repo>-pod-<name> by
+    # convention. Every role a repo's CI creates carries that repo's permissions boundary, and
+    # eks-platform only links a tenant to roles named after it.
     {
       sid        = "PassPodRoles"
       actions    = ["iam:PassRole"]
-      resources  = [format(local.roles, "karpenter")]
+      resources  = [format(local.roles, "karpenter"), "arn:aws:iam::${get_aws_account_id()}:role/*-pod-*"]
       conditions = [{ test = "StringEquals", variable = "iam:PassedToService", values = ["pods.eks.amazonaws.com"] }]
     },
   ]
