@@ -114,6 +114,14 @@ inputs = {
       resources  = [format(local.roles, "cluster"), format(local.roles, "node")]
       conditions = [{ test = "StringEquals", variable = "iam:PassedToService", values = ["eks.amazonaws.com"] }]
     },
+    # Roles the cluster's pods get through EKS Pod Identity (eks-platform's shared/), to the
+    # Pod Identity service only.
+    {
+      sid        = "PassPodRoles"
+      actions    = ["iam:PassRole"]
+      resources  = [format(local.roles, "karpenter")]
+      conditions = [{ test = "StringEquals", variable = "iam:PassedToService", values = ["pods.eks.amazonaws.com"] }]
+    },
   ]
 
   role_arn_name = "LIFECYCLE_ROLE_ARN"
