@@ -89,6 +89,15 @@ inputs = {
       resources  = ["*"]
       conditions = local.tagged_as_cluster
     },
+    # EKS checks that whoever creates a node group from a launch template may launch
+    # instances with it, though EKS launches them. Only launches from a launch template; the
+    # role can create launch templates only tagged as this cluster's.
+    {
+      sid        = "LaunchFromTemplates"
+      actions    = ["ec2:RunInstances"]
+      resources  = ["*"]
+      conditions = [{ test = "ArnLike", variable = "ec2:LaunchTemplate", values = [format(local.arn, "ec2", "launch-template/*")] }]
+    },
     # Network interfaces the VPC CNI left behind (scripts/cluster-down.sh).
     {
       sid        = "DeleteLeakedInterfaces"
